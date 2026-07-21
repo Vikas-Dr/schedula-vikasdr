@@ -3,9 +3,9 @@ import { JwtAuthGuard } from '../common/guards/jwt-auth.guard';
 import { Roles } from '../auth/roles.decorator';
 import { RolesGuard } from '../auth/roles.guard';
 
-@Controller('patients')
+@Controller()
 export class PatientsController {
-  @Get('me')
+  @Get('patient/profile')
   @UseGuards(JwtAuthGuard, RolesGuard)
   @Roles('patient')
   getCurrentPatient(@Request() req: any) {

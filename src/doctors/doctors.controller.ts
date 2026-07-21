@@ -6,16 +6,16 @@ import { UsersService } from '../users/users.service';
 import { CurrentUser } from '../common/decorators/user.decorator';
 import { User } from '../users/user.entity';
 
-@Controller('doctors')
+@Controller()
 export class DoctorsController {
   constructor(private readonly usersService: UsersService) {}
 
-  @Get()
+  @Get('doctors')
   findAll() {
     return this.usersService.findDoctors();
   }
 
-  @Get('me')
+  @Get('doctor/profile')
   @UseGuards(JwtAuthGuard, RolesGuard)
   @Roles('doctor')
   getCurrentDoctor(@CurrentUser() user: User) {

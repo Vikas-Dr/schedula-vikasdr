@@ -1,3 +1,4 @@
+import { Transform } from 'class-transformer';
 import { IsEmail, IsEnum, IsNotEmpty, IsOptional, IsString, MinLength } from 'class-validator';
 
 export class RegisterDto {
@@ -16,6 +17,7 @@ export class RegisterDto {
   @IsNotEmpty()
   phone: string;
 
+  @Transform(({ value }) => (typeof value === 'string' ? value.toLowerCase() : value))
   @IsEnum(['doctor', 'patient'])
   role: 'doctor' | 'patient';
 
