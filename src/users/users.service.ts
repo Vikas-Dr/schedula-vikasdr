@@ -35,15 +35,19 @@ export class UsersService {
       role: data.role,
     });
 
+    const savedUser = await this.usersRepository.save(user);
+
     if (data.role === 'doctor') {
       const doctorProfile = this.doctorRepository.create({
         specialization: data.doctorProfile?.specialization,
-        experienceYears: data.doctorProfile?.experienceYears,
-        fees: data.doctorProfile?.fees,
-        verified: false,
-        user,
+        bio: data.doctorProfile?.bio,
+        yearsOfExperience: data.doctorProfile?.yearsOfExperience,
+        fee: data.doctorProfile?.fee,
+        isVerified: false,
+        user: savedUser,
       });
-      user.doctorProfile = doctorProfile;
+      await this.doctorRepository.save(doctorProfile);
+      savedUser.doctorProfile = doctorProfile;
     }
 
     if (data.role === 'patient') {
@@ -52,12 +56,13 @@ export class UsersService {
         gender: data.patientProfile?.gender,
         bloodType: data.patientProfile?.bloodType,
         emergencyContact: data.patientProfile?.emergencyContact,
-        user,
+        user: savedUser,
       });
-      user.patientProfile = patientProfile;
+      await this.patientRepository.save(patientProfile);
+      savedUser.patientProfile = patientProfile;
     }
 
-    return this.usersRepository.save(user);
+    return savedUser;
   }
 
   findOneByEmail(email: string) {

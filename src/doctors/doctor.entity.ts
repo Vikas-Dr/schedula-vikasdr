@@ -1,4 +1,10 @@
-import { Column, Entity, JoinColumn, OneToOne, PrimaryGeneratedColumn } from 'typeorm';
+import {
+  Column,
+  Entity,
+  JoinColumn,
+  OneToOne,
+  PrimaryGeneratedColumn,
+} from 'typeorm';
 import { User } from '../users/user.entity';
 
 @Entity({ name: 'doctor_profiles' })
@@ -10,13 +16,16 @@ export class DoctorProfile {
   specialization?: string;
 
   @Column({ nullable: true })
-  experienceYears?: string;
+  bio?: string;
 
-  @Column({ nullable: true })
-  fees?: string;
+  @Column({ name: 'years_of_experience', nullable: true })
+  yearsOfExperience?: string;
 
-  @Column({ default: false })
-  verified: boolean;
+  @Column({ name: 'fee', nullable: true })
+  fee?: string;
+
+  @Column({ name: 'is_verified', default: false })
+  isVerified: boolean;
 
   @OneToOne(() => User, (user) => user.doctorProfile, { onDelete: 'CASCADE' })
   @JoinColumn()

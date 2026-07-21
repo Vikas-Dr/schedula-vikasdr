@@ -17,11 +17,13 @@ import { PatientProfile } from './patients/patient.entity';
         const isTest = process.env.NODE_ENV === 'test';
         return {
           type: isTest ? 'sqlite' : 'postgres',
-          database: isTest ? ':memory:' : process.env.DB_NAME ?? 'schedula',
-          host: isTest ? undefined : process.env.DB_HOST ?? 'localhost',
-          port: isTest ? undefined : parseInt(process.env.DB_PORT ?? '5432', 10),
-          username: isTest ? undefined : process.env.DB_USER ?? 'postgres',
-          password: isTest ? undefined : process.env.DB_PASS ?? 'postgres',
+          database: isTest ? ':memory:' : (process.env.DB_NAME ?? 'schedula'),
+          host: isTest ? undefined : (process.env.DB_HOST ?? 'localhost'),
+          port: isTest
+            ? undefined
+            : parseInt(process.env.DB_PORT ?? '5432', 10),
+          username: isTest ? undefined : (process.env.DB_USER ?? 'postgres'),
+          password: isTest ? undefined : (process.env.DB_PASS ?? 'postgres'),
           entities: [User, DoctorProfile, PatientProfile],
           synchronize: true,
           dropSchema: isTest,

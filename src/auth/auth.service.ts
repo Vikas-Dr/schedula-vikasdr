@@ -46,8 +46,9 @@ export class AuthService {
         registerDto.role === 'doctor'
           ? {
               specialization: registerDto.specialization,
-              experienceYears: registerDto.experienceYears,
-              fees: registerDto.fees,
+              bio: registerDto.bio,
+              yearsOfExperience: registerDto.yearsOfExperience,
+              fee: registerDto.fee,
             }
           : undefined,
       patientProfile:
