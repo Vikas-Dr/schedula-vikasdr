@@ -1,6 +1,71 @@
-Entity Relationship (ER) Diagram
-You can view the correct and detailed ER-Diagram at -> 
-Document/ER-DIAGRAM
+# Entity Relationship (ER) Diagram
+
+You can view the detailed image at [Document/ER-DIAGRAM.png](Document/ER-DIAGRAM.png) and the raw source code in [Document/ER-DIAGRAM.mermaid](Document/ER-DIAGRAM.mermaid).
+
+```mermaid
+erDiagram
+    USER ||--o| DOCTOR : "has profile"
+    USER ||--o| PATIENT : "has profile"
+    USER ||--o{ NOTIFICATION : "receives"
+    DOCTOR ||--o{ SLOT : "manages"
+    DOCTOR ||--o{ APPOINTMENT : "handles"
+    PATIENT ||--o{ APPOINTMENT : "books"
+    SLOT ||--|| APPOINTMENT : "scheduled for"
+
+    USER {
+        int id PK
+        string email
+        string password
+        string name
+        string phone_number
+        string role
+    }
+
+    DOCTOR {
+        int id PK
+        int user_id FK
+        string specialization
+        string bio
+        int years_of_experience
+        decimal fee
+        boolean is_verified
+    }
+
+    PATIENT {
+        int id PK
+        int user_id FK
+        date birthday
+        string gender
+        string blood_type
+        string emergency_contact
+    }
+
+    SLOT {
+        int id PK
+        int doctor_id FK
+        datetime start_time
+        datetime end_time
+        string status
+    }
+
+    APPOINTMENT {
+        int id PK
+        int patient_id FK
+        int doctor_id FK
+        int slot_id FK
+        datetime time
+        string reason
+        string status
+    }
+
+    NOTIFICATION {
+        int id PK
+        int user_id FK
+        string message
+        string status
+        datetime created_at
+    }
+```
 
 
 📝 Database Tables Explained
