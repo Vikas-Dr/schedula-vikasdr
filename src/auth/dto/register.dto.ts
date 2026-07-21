@@ -46,3 +46,4 @@ export class RegisterDto {
   @IsOptional()
   @IsString()
   emergencyContact?: string;
+}

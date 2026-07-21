@@ -5,6 +5,16 @@ import { User, UserRole } from './user.entity';
 import { DoctorProfile } from '../doctors/doctor.entity';
 import { PatientProfile } from '../patients/patient.entity';
 
+export type CreateUserData = {
+  email: string;
+  password: string;
+  name: string;
+  phone: string;
+  role: UserRole;
+  doctorProfile?: Partial<DoctorProfile>;
+  patientProfile?: Partial<PatientProfile>;
+};
+
 @Injectable()
 export class UsersService {
   constructor(
@@ -16,7 +26,7 @@ export class UsersService {
     private readonly patientRepository: Repository<PatientProfile>,
   ) {}
 
-  async createUser(data: Partial<User> & { role: UserRole }) {
+  async createUser(data: CreateUserData) {
     const user = this.usersRepository.create({
       email: data.email,
       password: data.password,
@@ -31,6 +41,7 @@ export class UsersService {
         experienceYears: data.doctorProfile?.experienceYears,
         fees: data.doctorProfile?.fees,
         verified: false,
+        user,
       });
       user.doctorProfile = doctorProfile;
     }
@@ -41,6 +52,7 @@ export class UsersService {
         gender: data.patientProfile?.gender,
         bloodType: data.patientProfile?.bloodType,
         emergencyContact: data.patientProfile?.emergencyContact,
+        user,
       });
       user.patientProfile = patientProfile;
     }
