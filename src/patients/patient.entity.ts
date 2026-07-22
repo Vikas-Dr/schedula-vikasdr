@@ -15,6 +15,9 @@ export class PatientProfile {
   @Column({ nullable: true })
   birthday?: string;
 
+  @Column({ type: 'int', nullable: true })
+  age?: number;
+
   @Column({ nullable: true })
   gender?: string;
 
@@ -23,6 +26,9 @@ export class PatientProfile {
 
   @Column({ name: 'emergency_contact', nullable: true })
   emergencyContact?: string;
+
+  @Column({ name: 'basic_health_info', nullable: true })
+  basicHealthInfo?: string;
 
   @OneToOne(() => User, (user) => user.patientProfile, { onDelete: 'CASCADE' })
   @JoinColumn()
