@@ -18,11 +18,17 @@ export class DoctorProfile {
   @Column({ nullable: true })
   bio?: string;
 
+  @Column({ name: 'qualification', nullable: true })
+  qualification?: string;
+
   @Column({ name: 'years_of_experience', nullable: true })
   yearsOfExperience?: string;
 
   @Column({ name: 'fee', nullable: true })
   fee?: string;
+
+  @Column({ name: 'availability', nullable: true })
+  availability?: string;
 
   @Column({ name: 'is_verified', default: false })
   isVerified: boolean;

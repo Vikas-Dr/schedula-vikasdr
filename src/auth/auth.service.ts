@@ -35,6 +35,24 @@ export class AuthService {
       throw new UnauthorizedException('Email already exists');
     }
 
+    const hasDoctorProfileData =
+      registerDto.role === 'doctor' &&
+      Boolean(
+        registerDto.specialization ||
+          registerDto.bio ||
+          registerDto.yearsOfExperience ||
+          registerDto.fee,
+      );
+
+    const hasPatientProfileData =
+      registerDto.role === 'patient' &&
+      Boolean(
+        registerDto.birthday ||
+          registerDto.gender ||
+          registerDto.bloodType ||
+          registerDto.emergencyContact,
+      );
+
     const hashedPassword = await bcrypt.hash(registerDto.password, 10);
     const user = await this.usersService.createUser({
       email: registerDto.email,
@@ -42,24 +60,22 @@ export class AuthService {
       name: registerDto.name,
       phone: registerDto.phone,
       role: registerDto.role,
-      doctorProfile:
-        registerDto.role === 'doctor'
-          ? {
-              specialization: registerDto.specialization,
-              bio: registerDto.bio,
-              yearsOfExperience: registerDto.yearsOfExperience,
-              fee: registerDto.fee,
-            }
-          : undefined,
-      patientProfile:
-        registerDto.role === 'patient'
-          ? {
-              birthday: registerDto.birthday,
-              gender: registerDto.gender,
-              bloodType: registerDto.bloodType,
-              emergencyContact: registerDto.emergencyContact,
-            }
-          : undefined,
+      doctorProfile: hasDoctorProfileData
+        ? {
+            specialization: registerDto.specialization,
+            bio: registerDto.bio,
+            yearsOfExperience: registerDto.yearsOfExperience,
+            fee: registerDto.fee,
+          }
+        : undefined,
+      patientProfile: hasPatientProfileData
+        ? {
+            birthday: registerDto.birthday,
+            gender: registerDto.gender,
+            bloodType: registerDto.bloodType,
+            emergencyContact: registerDto.emergencyContact,
+          }
+        : undefined,
     });
 
     return this.login(user);
