@@ -2,14 +2,41 @@
 @baseUrl = http://localhost:3000
 @doctorToken = YOUR_DOCTOR_JWT_TOKEN
 
-### 0. Login Doctor (To get token)
-# @name loginDoctor
+### 0.1 Register Doctor (Required fields: name, phone, role='doctor', email, password)
+POST {{baseUrl}}/auth/register
+Content-Type: application/json
+
+{
+  "email": "doctor@example.com",
+  "password": "password123",
+  "name": "Dr. John Smith",
+  "phone": "1234567890",
+  "role": "doctor"
+}
+
+###
+
+### 0.2 Login Doctor (Gets JWT token)
 POST {{baseUrl}}/auth/login
 Content-Type: application/json
 
 {
   "email": "doctor@example.com",
   "password": "password123"
+}
+
+###
+
+### 0.3 Create Doctor Profile (If not existing)
+POST {{baseUrl}}/doctor/profile
+Content-Type: application/json
+Authorization: Bearer {{doctorToken}}
+
+{
+  "name": "Dr. John Smith",
+  "specialization": "Cardiology",
+  "experience": "10 years",
+  "qualification": "MD"
 }
 
 ###

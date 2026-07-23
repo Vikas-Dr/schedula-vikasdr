@@ -2,7 +2,7 @@
   "info": {
     "_postman_id": "doctor-availability-vscode-collection",
     "name": "Schedula - Doctor Availability API (VS Code Collection)",
-    "description": "Complete Postman Collection for VS Code Postman Extension & Postman Desktop. Includes automated variable auto-capturing for tokens and slot IDs.",
+    "description": "Complete Postman Collection for VS Code Postman Extension & Postman Desktop. Includes registration, login, token auto-saving, recurring slots, custom date overrides, and edge case testing.",
     "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
   },
   "variable": [
@@ -29,18 +29,54 @@
   ],
   "item": [
     {
-      "name": "0. Auth Helpers",
+      "name": "0. Authentication Helpers",
       "item": [
         {
-          "name": "0.1 Login Doctor (Auto-saves Token)",
+          "name": "0.1 Register Doctor (Create Account)",
           "event": [
             {
               "listen": "test",
               "script": {
                 "exec": [
                   "var jsonData = pm.response.json();",
-                  "if (jsonData.token) { pm.collectionVariables.set('doctorToken', jsonData.token); }",
-                  "if (jsonData.access_token) { pm.collectionVariables.set('doctorToken', jsonData.access_token); }"
+                  "if (jsonData.access_token) { pm.collectionVariables.set('doctorToken', jsonData.access_token); }",
+                  "if (jsonData.token) { pm.collectionVariables.set('doctorToken', jsonData.token); }"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"email\": \"doctor@example.com\",\n  \"password\": \"password123\",\n  \"name\": \"Dr. John Smith\",\n  \"phone\": \"1234567890\",\n  \"role\": \"doctor\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/auth/register",
+              "host": ["{{baseUrl}}"],
+              "path": ["auth", "register"]
+            },
+            "description": "Register a new doctor account with required name, phone, and role fields."
+          },
+          "response": []
+        },
+        {
+          "name": "0.2 Login Doctor (Auto-saves Token)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "var jsonData = pm.response.json();",
+                  "if (jsonData.access_token) { pm.collectionVariables.set('doctorToken', jsonData.access_token); }",
+                  "if (jsonData.token) { pm.collectionVariables.set('doctorToken', jsonData.token); }"
                 ],
                 "type": "text/javascript"
               }
@@ -64,6 +100,33 @@
               "path": ["auth", "login"]
             },
             "description": "Log in doctor to automatically save doctorToken into collection variable."
+          },
+          "response": []
+        },
+        {
+          "name": "0.3 Create Doctor Profile (If Not Already Created)",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{doctorToken}}"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"name\": \"Dr. John Smith\",\n  \"specialization\": \"Cardiology\",\n  \"experience\": \"10 years\",\n  \"qualification\": \"MD\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/doctor/profile",
+              "host": ["{{baseUrl}}"],
+              "path": ["doctor", "profile"]
+            },
+            "description": "Ensure doctor profile exists so doctor can set availability."
           },
           "response": []
         }
