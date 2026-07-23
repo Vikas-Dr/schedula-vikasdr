@@ -2,10 +2,13 @@ import {
   Column,
   Entity,
   JoinColumn,
+  OneToMany,
   OneToOne,
   PrimaryGeneratedColumn,
 } from 'typeorm';
 import { User } from '../users/user.entity';
+import { RecurringAvailability } from './entities/recurring-availability.entity';
+import { CustomAvailability } from './entities/custom-availability.entity';
 
 @Entity({ name: 'doctor_profiles' })
 export class DoctorProfile {
@@ -30,4 +33,14 @@ export class DoctorProfile {
   @OneToOne(() => User, (user) => user.doctorProfile, { onDelete: 'CASCADE' })
   @JoinColumn()
   user!: User;
+
+  @OneToMany(() => RecurringAvailability, (recurring) => recurring.doctor, {
+    cascade: true,
+  })
+  recurringAvailabilities!: RecurringAvailability[];
+
+  @OneToMany(() => CustomAvailability, (custom) => custom.doctor, {
+    cascade: true,
+  })
+  customAvailabilities!: CustomAvailability[];
 }
