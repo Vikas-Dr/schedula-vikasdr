@@ -27,7 +27,6 @@ erDiagram
         string specialization
         string bio
         int years_of_experience
-        decimal fee
         boolean is_verified
     }
 
@@ -77,7 +76,7 @@ What it does: This is the main login table for everyone.
 How it works: When anyone signs up (doctor, patient, or admin), they get a row here. It stores their email, password, name, phone number, and role.
 Doctor (Purple):
 What it does: Stores details about doctors.
-How it works: It connects directly to the User table. It stores their specialization, bio, years of experience, fees, and if they are verified.
+How it works: It connects directly to the User table. It stores their specialization, bio, years of experience, and if they are verified.
 Patient (Blue):
 What it does: Stores details about patients.
 How it works: It also connects directly to the User table. It stores their birthday, gender, blood type, and emergency contact info.

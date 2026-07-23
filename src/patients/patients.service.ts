@@ -98,10 +98,7 @@ export class PatientsService {
       profile.emergencyContact =
         dto.emergencyContact ?? dto.contactDetails ?? dto.phone;
     }
-    if (
-      dto.basicHealthInfo !== undefined ||
-      dto.medicalHistory !== undefined
-    ) {
+    if (dto.basicHealthInfo !== undefined || dto.medicalHistory !== undefined) {
       profile.basicHealthInfo = dto.basicHealthInfo ?? dto.medicalHistory;
     }
     if (dto.birthday !== undefined) profile.birthday = dto.birthday;

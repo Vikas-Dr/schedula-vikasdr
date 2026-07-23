@@ -11,8 +11,8 @@ import { User } from '../users/user.entity';
 
 describe('PatientsService', () => {
   let service: PatientsService;
-  let patientRepo: any;
-  let userRepo: any;
+  let patientRepo: { create: jest.Mock; save: jest.Mock };
+  let userRepo: { findOne: jest.Mock; save: jest.Mock };
 
   const mockUser: User = {
     id: 'pat-uuid-1',
@@ -21,7 +21,7 @@ describe('PatientsService', () => {
     name: 'Alice',
     phone: '9876543210',
     role: 'patient',
-  } as User;
+  };
 
   const mockPatientProfile: PatientProfile = {
     id: 'pat-profile-1',
@@ -32,17 +32,28 @@ describe('PatientsService', () => {
     birthday: '1995-05-05',
     bloodType: 'A+',
     user: mockUser,
-  } as PatientProfile;
+  };
 
   beforeEach(async () => {
     patientRepo = {
-      create: jest.fn().mockImplementation((dto) => ({ ...dto, id: 'pat-profile-1' })),
-      save: jest.fn().mockImplementation((entity) => Promise.resolve({ ...entity, id: 'pat-profile-1' })),
+      create: jest
+        .fn()
+        .mockImplementation(
+          (dto: Record<string, unknown>): PatientProfile =>
+            ({ ...dto, id: 'pat-profile-1' }) as PatientProfile,
+        ),
+      save: jest
+        .fn()
+        .mockImplementation((entity: PatientProfile): Promise<PatientProfile> =>
+          Promise.resolve({ ...entity, id: 'pat-profile-1' }),
+        ),
     };
 
     userRepo = {
       findOne: jest.fn(),
-      save: jest.fn().mockImplementation((u) => Promise.resolve(u)),
+      save: jest
+        .fn()
+        .mockImplementation((u: User): Promise<User> => Promise.resolve(u)),
     };
 
     const module: TestingModule = await Test.createTestingModule({

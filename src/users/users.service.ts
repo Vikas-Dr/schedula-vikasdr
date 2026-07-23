@@ -46,9 +46,7 @@ export class UsersService {
         specialization: data.doctorProfile?.specialization,
         bio: data.doctorProfile?.bio,
         yearsOfExperience: data.doctorProfile?.yearsOfExperience,
-        fee: data.doctorProfile?.fee,
         qualification: data.doctorProfile?.qualification,
-        availability: data.doctorProfile?.availability,
         isVerified: false,
         user: savedUser,
       });
@@ -80,6 +78,7 @@ export class UsersService {
   findOneByEmail(email: string) {
     return this.usersRepository.findOne({
       where: { email },
+      select: ['id', 'email', 'password', 'name', 'phone', 'role'],
       relations: ['doctorProfile', 'patientProfile'],
     });
   }

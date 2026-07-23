@@ -1,11 +1,49 @@
 import { Test, TestingModule } from '@nestjs/testing';
 import { INestApplication, ValidationPipe } from '@nestjs/common';
 import request from 'supertest';
+import { App } from 'supertest/types';
 import { DataSource } from 'typeorm';
 import { AppModule } from '../src/app.module';
 
+interface AuthResponse {
+  access_token: string;
+}
+
+interface DoctorProfileResponse {
+  id: string;
+  specialization?: string;
+  yearsOfExperience?: string;
+  qualification?: string;
+  bio?: string;
+  isVerified?: boolean;
+  user: {
+    id: string;
+    name: string;
+    email: string;
+    phone: string;
+    role: string;
+  };
+}
+
+interface PatientProfileResponse {
+  id: string;
+  age?: number;
+  gender?: string;
+  emergencyContact?: string;
+  basicHealthInfo?: string;
+  birthday?: string;
+  bloodType?: string;
+  user: {
+    id: string;
+    name: string;
+    email: string;
+    phone: string;
+    role: string;
+  };
+}
+
 describe('Doctor and Patient Onboarding Flow (e2e)', () => {
-  let app: INestApplication;
+  let app: INestApplication<App>;
   let dataSource: DataSource;
 
   let doctorToken: string;
@@ -41,7 +79,7 @@ describe('Doctor and Patient Onboarding Flow (e2e)', () => {
         phone: '1112223333',
         role: 'doctor',
       });
-    doctorToken = docReg.body.access_token;
+    doctorToken = (docReg.body as AuthResponse).access_token;
 
     // Register a patient
     const patReg = await request(app.getHttpServer())
@@ -53,7 +91,7 @@ describe('Doctor and Patient Onboarding Flow (e2e)', () => {
         phone: '4445556666',
         role: 'patient',
       });
-    patientToken = patReg.body.access_token;
+    patientToken = (patReg.body as AuthResponse).access_token;
 
     // Register a second doctor (no profile yet) to test 404
     const newDocReg = await request(app.getHttpServer())
@@ -65,7 +103,7 @@ describe('Doctor and Patient Onboarding Flow (e2e)', () => {
         phone: '7778889999',
         role: 'doctor',
       });
-    newDoctorToken = newDocReg.body.access_token;
+    newDoctorToken = (newDocReg.body as AuthResponse).access_token;
   });
 
   afterAll(async () => {
@@ -100,21 +138,18 @@ describe('Doctor and Patient Onboarding Flow (e2e)', () => {
           specialization: 'Cardiology',
           experience: '8 years',
           qualification: 'MD, FACC',
-          consultationFee: '$150',
-          availability: 'Mon-Fri 9AM-5PM',
           profileDetails: 'Cardiologist with 8+ years of experience.',
         })
         .expect(201);
 
-      expect(res.body.id).toBeDefined();
-      expect(res.body.specialization).toBe('Cardiology');
-      expect(res.body.yearsOfExperience).toBe('8 years');
-      expect(res.body.qualification).toBe('MD, FACC');
-      expect(res.body.fee).toBe('$150');
-      expect(res.body.availability).toBe('Mon-Fri 9AM-5PM');
-      expect(res.body.bio).toBe('Cardiologist with 8+ years of experience.');
-      expect(res.body.user.name).toBe('Dr. Sarah Connor');
-      expect(res.body.user.role).toBe('doctor');
+      const body = res.body as DoctorProfileResponse;
+      expect(body.id).toBeDefined();
+      expect(body.specialization).toBe('Cardiology');
+      expect(body.yearsOfExperience).toBe('8 years');
+      expect(body.qualification).toBe('MD, FACC');
+      expect(body.bio).toBe('Cardiologist with 8+ years of experience.');
+      expect(body.user.name).toBe('Dr. Sarah Connor');
+      expect(body.user.role).toBe('doctor');
     });
 
     it('POST /doctor/profile should fail with 409 Conflict if profile already exists', async () => {
@@ -133,8 +168,9 @@ describe('Doctor and Patient Onboarding Flow (e2e)', () => {
         .set('Authorization', `Bearer ${doctorToken}`)
         .expect(200);
 
-      expect(res.body.specialization).toBe('Cardiology');
-      expect(res.body.qualification).toBe('MD, FACC');
+      const body = res.body as DoctorProfileResponse;
+      expect(body.specialization).toBe('Cardiology');
+      expect(body.qualification).toBe('MD, FACC');
     });
 
     it('PATCH /doctor/profile should update doctor profile details', async () => {
@@ -142,14 +178,14 @@ describe('Doctor and Patient Onboarding Flow (e2e)', () => {
         .patch('/doctor/profile')
         .set('Authorization', `Bearer ${doctorToken}`)
         .send({
-          consultationFee: '$200',
-          availability: 'Mon-Thu 10AM-4PM',
+          specialization: 'Cardiology',
+          experience: '10 years',
         })
         .expect(200);
 
-      expect(res.body.fee).toBe('$200');
-      expect(res.body.availability).toBe('Mon-Thu 10AM-4PM');
-      expect(res.body.specialization).toBe('Cardiology');
+      const body = res.body as DoctorProfileResponse;
+      expect(body.yearsOfExperience).toBe('10 years');
+      expect(body.specialization).toBe('Cardiology');
     });
   });
 
@@ -168,15 +204,16 @@ describe('Doctor and Patient Onboarding Flow (e2e)', () => {
         })
         .expect(201);
 
-      expect(res.body.id).toBeDefined();
-      expect(res.body.age).toBe(30);
-      expect(res.body.gender).toBe('Female');
-      expect(res.body.emergencyContact).toBe('9998887777');
-      expect(res.body.basicHealthInfo).toBe(
+      const body = res.body as PatientProfileResponse;
+      expect(body.id).toBeDefined();
+      expect(body.age).toBe(30);
+      expect(body.gender).toBe('Female');
+      expect(body.emergencyContact).toBe('9998887777');
+      expect(body.basicHealthInfo).toBe(
         'No known allergies. Regular fitness routine.',
       );
-      expect(res.body.user.name).toBe('Jane Doe');
-      expect(res.body.user.role).toBe('patient');
+      expect(body.user.name).toBe('Jane Doe');
+      expect(body.user.role).toBe('patient');
     });
 
     it('POST /patient/profile should fail with 409 Conflict if profile already exists', async () => {
@@ -195,8 +232,9 @@ describe('Doctor and Patient Onboarding Flow (e2e)', () => {
         .set('Authorization', `Bearer ${patientToken}`)
         .expect(200);
 
-      expect(res.body.age).toBe(30);
-      expect(res.body.gender).toBe('Female');
+      const body = res.body as PatientProfileResponse;
+      expect(body.age).toBe(30);
+      expect(body.gender).toBe('Female');
     });
 
     it('PATCH /patient/profile should update patient profile details', async () => {
@@ -209,8 +247,9 @@ describe('Doctor and Patient Onboarding Flow (e2e)', () => {
         })
         .expect(200);
 
-      expect(res.body.age).toBe(31);
-      expect(res.body.basicHealthInfo).toBe('Asthma in cold weather.');
+      const body = res.body as PatientProfileResponse;
+      expect(body.age).toBe(31);
+      expect(body.basicHealthInfo).toBe('Asthma in cold weather.');
     });
   });
 

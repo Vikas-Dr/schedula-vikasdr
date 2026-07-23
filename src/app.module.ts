@@ -1,5 +1,5 @@
 import { Module } from '@nestjs/common';
-import { TypeOrmModule } from '@nestjs/typeorm';
+import { TypeOrmModule, TypeOrmModuleOptions } from '@nestjs/typeorm';
 import { AppController } from './app.controller';
 import { AppService } from './app.service';
 import { AuthModule } from './auth/auth.module';
@@ -13,7 +13,7 @@ import { PatientProfile } from './patients/patient.entity';
 @Module({
   imports: [
     TypeOrmModule.forRootAsync({
-      useFactory: () => {
+      useFactory: (): TypeOrmModuleOptions => {
         const isTest = process.env.NODE_ENV === 'test';
         return {
           type: isTest ? 'sqlite' : 'postgres',
@@ -30,7 +30,7 @@ import { PatientProfile } from './patients/patient.entity';
           dropSchema: isTest,
           autoLoadEntities: true,
           logging: false,
-        } as any;
+        };
       },
     }),
     UsersModule,

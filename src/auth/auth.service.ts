@@ -22,7 +22,7 @@ export class AuthService {
     return matches ? user : null;
   }
 
-  async login(user: User) {
+  login(user: User) {
     const payload = { sub: user.id, email: user.email, role: user.role };
     return {
       access_token: this.jwtService.sign(payload),
@@ -39,18 +39,17 @@ export class AuthService {
       registerDto.role === 'doctor' &&
       Boolean(
         registerDto.specialization ||
-          registerDto.bio ||
-          registerDto.yearsOfExperience ||
-          registerDto.fee,
+        registerDto.bio ||
+        registerDto.yearsOfExperience,
       );
 
     const hasPatientProfileData =
       registerDto.role === 'patient' &&
       Boolean(
         registerDto.birthday ||
-          registerDto.gender ||
-          registerDto.bloodType ||
-          registerDto.emergencyContact,
+        registerDto.gender ||
+        registerDto.bloodType ||
+        registerDto.emergencyContact,
       );
 
     const hashedPassword = await bcrypt.hash(registerDto.password, 10);
@@ -65,7 +64,6 @@ export class AuthService {
             specialization: registerDto.specialization,
             bio: registerDto.bio,
             yearsOfExperience: registerDto.yearsOfExperience,
-            fee: registerDto.fee,
           }
         : undefined,
       patientProfile: hasPatientProfileData

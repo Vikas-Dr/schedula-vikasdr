@@ -2,6 +2,7 @@ import {
   Body,
   Controller,
   Get,
+  NotFoundException,
   Param,
   Patch,
   Post,
@@ -61,6 +62,9 @@ export class DoctorsController {
   @Roles('doctor', 'patient')
   async findOne(@Param('id') id: string) {
     const user = await this.usersService.findOneById(id);
-    return user?.role === 'doctor' ? user : null;
+    if (!user || user.role !== 'doctor') {
+      throw new NotFoundException('Doctor not found');
+    }
+    return user;
   }
 }

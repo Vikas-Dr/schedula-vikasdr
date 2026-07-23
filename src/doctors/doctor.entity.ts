@@ -10,7 +10,7 @@ import { User } from '../users/user.entity';
 @Entity({ name: 'doctor_profiles' })
 export class DoctorProfile {
   @PrimaryGeneratedColumn('uuid')
-  id: string;
+  id!: string;
 
   @Column({ nullable: true })
   specialization?: string;
@@ -24,16 +24,10 @@ export class DoctorProfile {
   @Column({ name: 'years_of_experience', nullable: true })
   yearsOfExperience?: string;
 
-  @Column({ name: 'fee', nullable: true })
-  fee?: string;
-
-  @Column({ name: 'availability', nullable: true })
-  availability?: string;
-
   @Column({ name: 'is_verified', default: false })
-  isVerified: boolean;
+  isVerified!: boolean;
 
   @OneToOne(() => User, (user) => user.doctorProfile, { onDelete: 'CASCADE' })
   @JoinColumn()
-  user: User;
+  user!: User;
 }

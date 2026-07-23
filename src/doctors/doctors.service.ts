@@ -49,15 +49,13 @@ export class DoctorsService {
       specialization: dto.specialization,
       yearsOfExperience: dto.yearsOfExperience ?? dto.experience,
       qualification: dto.qualification,
-      fee: dto.fee ?? dto.consultationFee,
-      availability: dto.availability ?? dto.consultationHours,
       bio: dto.bio ?? dto.profileDetails,
       isVerified: false,
       user,
     });
 
     const savedProfile = await this.doctorRepository.save(doctorProfile);
-    
+
     return this.formatProfileResponse(savedProfile, user);
   }
 
@@ -90,17 +88,13 @@ export class DoctorsService {
     }
 
     const profile = user.doctorProfile;
-    if (dto.specialization !== undefined) profile.specialization = dto.specialization;
+    if (dto.specialization !== undefined)
+      profile.specialization = dto.specialization;
     if (dto.yearsOfExperience !== undefined || dto.experience !== undefined) {
       profile.yearsOfExperience = dto.yearsOfExperience ?? dto.experience;
     }
-    if (dto.qualification !== undefined) profile.qualification = dto.qualification;
-    if (dto.fee !== undefined || dto.consultationFee !== undefined) {
-      profile.fee = dto.fee ?? dto.consultationFee;
-    }
-    if (dto.availability !== undefined || dto.consultationHours !== undefined) {
-      profile.availability = dto.availability ?? dto.consultationHours;
-    }
+    if (dto.qualification !== undefined)
+      profile.qualification = dto.qualification;
     if (dto.bio !== undefined || dto.profileDetails !== undefined) {
       profile.bio = dto.bio ?? dto.profileDetails;
     }
@@ -115,8 +109,6 @@ export class DoctorsService {
       specialization: profile.specialization,
       yearsOfExperience: profile.yearsOfExperience,
       qualification: profile.qualification,
-      fee: profile.fee,
-      availability: profile.availability,
       bio: profile.bio,
       isVerified: profile.isVerified,
       user: {

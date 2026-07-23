@@ -1,3 +1,4 @@
+import { Transform } from 'class-transformer';
 import { IsInt, IsOptional, IsString, Min } from 'class-validator';
 
 export class UpdatePatientProfileDto {
@@ -6,6 +7,11 @@ export class UpdatePatientProfileDto {
   name?: string;
 
   @IsOptional()
+  @Transform(({ value }: { value: unknown }) =>
+    typeof value === 'number' || typeof value === 'string'
+      ? Number(value)
+      : value,
+  )
   @IsInt()
   @Min(0)
   age?: number;
@@ -15,14 +21,29 @@ export class UpdatePatientProfileDto {
   gender?: string;
 
   @IsOptional()
+  @Transform(({ value }: { value: unknown }) =>
+    typeof value === 'string' || typeof value === 'number'
+      ? String(value)
+      : value,
+  )
   @IsString()
   contactDetails?: string;
 
   @IsOptional()
+  @Transform(({ value }: { value: unknown }) =>
+    typeof value === 'string' || typeof value === 'number'
+      ? String(value)
+      : value,
+  )
   @IsString()
   phone?: string;
 
   @IsOptional()
+  @Transform(({ value }: { value: unknown }) =>
+    typeof value === 'string' || typeof value === 'number'
+      ? String(value)
+      : value,
+  )
   @IsString()
   emergencyContact?: string;
 

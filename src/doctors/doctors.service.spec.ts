@@ -11,8 +11,8 @@ import { User } from '../users/user.entity';
 
 describe('DoctorsService', () => {
   let service: DoctorsService;
-  let doctorRepo: any;
-  let userRepo: any;
+  let doctorRepo: { create: jest.Mock; save: jest.Mock };
+  let userRepo: { findOne: jest.Mock; save: jest.Mock };
 
   const mockUser: User = {
     id: 'doc-uuid-1',
@@ -21,29 +21,38 @@ describe('DoctorsService', () => {
     name: 'Dr. John',
     phone: '1234567890',
     role: 'doctor',
-  } as User;
+  };
 
   const mockDoctorProfile: DoctorProfile = {
     id: 'profile-uuid-1',
     specialization: 'Neurology',
     yearsOfExperience: '10 years',
     qualification: 'MD',
-    fee: '150',
-    availability: 'Mon-Fri',
     bio: 'Neuro specialist',
     isVerified: false,
     user: mockUser,
-  } as DoctorProfile;
+  };
 
   beforeEach(async () => {
     doctorRepo = {
-      create: jest.fn().mockImplementation((dto) => ({ ...dto, id: 'profile-uuid-1' })),
-      save: jest.fn().mockImplementation((entity) => Promise.resolve({ ...entity, id: 'profile-uuid-1' })),
+      create: jest
+        .fn()
+        .mockImplementation(
+          (dto: Record<string, unknown>): DoctorProfile =>
+            ({ ...dto, id: 'profile-uuid-1' }) as DoctorProfile,
+        ),
+      save: jest
+        .fn()
+        .mockImplementation((entity: DoctorProfile): Promise<DoctorProfile> =>
+          Promise.resolve({ ...entity, id: 'profile-uuid-1' }),
+        ),
     };
 
     userRepo = {
       findOne: jest.fn(),
-      save: jest.fn().mockImplementation((u) => Promise.resolve(u)),
+      save: jest
+        .fn()
+        .mockImplementation((u: User): Promise<User> => Promise.resolve(u)),
     };
 
     const module: TestingModule = await Test.createTestingModule({
@@ -66,8 +75,6 @@ describe('DoctorsService', () => {
         specialization: 'Neurology',
         experience: '10 years',
         qualification: 'MD',
-        consultationFee: '150',
-        consultationHours: 'Mon-Fri',
         profileDetails: 'Neuro specialist',
       };
 
@@ -141,22 +148,20 @@ describe('DoctorsService', () => {
       userRepo.findOne.mockResolvedValue(existingUser);
 
       const dto = {
-        consultationFee: '200',
-        availability: 'Mon-Thu',
+        specialization: 'Cardiology',
       };
 
       const result = await service.updateProfile('doc-uuid-1', dto);
 
       expect(doctorRepo.save).toHaveBeenCalled();
-      expect(result.fee).toBe('200');
-      expect(result.availability).toBe('Mon-Thu');
+      expect(result.specialization).toBe('Cardiology');
     });
 
     it('should throw NotFoundException when updating non-existent profile', async () => {
       userRepo.findOne.mockResolvedValue({ ...mockUser, doctorProfile: null });
 
       await expect(
-        service.updateProfile('doc-uuid-1', { fee: '200' }),
+        service.updateProfile('doc-uuid-1', { specialization: 'Cardiology' }),
       ).rejects.toThrow(NotFoundException);
     });
   });

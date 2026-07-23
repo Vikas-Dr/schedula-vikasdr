@@ -20,7 +20,7 @@ describe('RolesGuard', () => {
           user: userRole ? { role: userRole } : null,
         }),
       }),
-    } as any;
+    } as unknown as ExecutionContext;
   };
 
   it('should allow access if no roles are required', () => {

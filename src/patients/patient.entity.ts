@@ -10,7 +10,7 @@ import { User } from '../users/user.entity';
 @Entity({ name: 'patient_profiles' })
 export class PatientProfile {
   @PrimaryGeneratedColumn('uuid')
-  id: string;
+  id!: string;
 
   @Column({ nullable: true })
   birthday?: string;
@@ -32,5 +32,5 @@ export class PatientProfile {
 
   @OneToOne(() => User, (user) => user.patientProfile, { onDelete: 'CASCADE' })
   @JoinColumn()
-  user: User;
+  user!: User;
 }

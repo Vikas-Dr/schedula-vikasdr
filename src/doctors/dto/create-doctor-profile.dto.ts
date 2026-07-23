@@ -1,3 +1,4 @@
+import { Transform } from 'class-transformer';
 import { IsOptional, IsString } from 'class-validator';
 
 export class CreateDoctorProfileDto {
@@ -10,32 +11,26 @@ export class CreateDoctorProfileDto {
   specialization?: string;
 
   @IsOptional()
+  @Transform(({ value }: { value: unknown }) =>
+    typeof value === 'string' || typeof value === 'number'
+      ? String(value)
+      : value,
+  )
   @IsString()
   yearsOfExperience?: string;
 
   @IsOptional()
+  @Transform(({ value }: { value: unknown }) =>
+    typeof value === 'string' || typeof value === 'number'
+      ? String(value)
+      : value,
+  )
   @IsString()
   experience?: string;
 
   @IsOptional()
   @IsString()
   qualification?: string;
-
-  @IsOptional()
-  @IsString()
-  fee?: string;
-
-  @IsOptional()
-  @IsString()
-  consultationFee?: string;
-
-  @IsOptional()
-  @IsString()
-  availability?: string;
-
-  @IsOptional()
-  @IsString()
-  consultationHours?: string;
 
   @IsOptional()
   @IsString()

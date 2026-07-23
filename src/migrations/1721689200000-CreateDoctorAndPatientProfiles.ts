@@ -1,8 +1,6 @@
 import { MigrationInterface, QueryRunner } from 'typeorm';
 
-export class CreateDoctorAndPatientProfiles1721689200000
-  implements MigrationInterface
-{
+export class CreateDoctorAndPatientProfiles1721689200000 implements MigrationInterface {
   name = 'CreateDoctorAndPatientProfiles1721689200000';
 
   public async up(queryRunner: QueryRunner): Promise<void> {
@@ -26,8 +24,6 @@ export class CreateDoctorAndPatientProfiles1721689200000
         "bio" character varying,
         "qualification" character varying,
         "years_of_experience" character varying,
-        "fee" character varying,
-        "availability" character varying,
         "is_verified" boolean NOT NULL DEFAULT false,
         "userId" uuid,
         CONSTRAINT "UQ_doctor_profiles_userId" UNIQUE ("userId"),

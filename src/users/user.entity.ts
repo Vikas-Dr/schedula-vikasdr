@@ -7,22 +7,22 @@ export type UserRole = 'doctor' | 'patient';
 @Entity({ name: 'users' })
 export class User {
   @PrimaryGeneratedColumn('uuid')
-  id: string;
+  id!: string;
 
   @Column({ unique: true })
-  email: string;
+  email!: string;
+
+  @Column({ select: false })
+  password!: string;
 
   @Column()
-  password: string;
+  name!: string;
 
   @Column()
-  name: string;
-
-  @Column()
-  phone: string;
+  phone!: string;
 
   @Column({ type: 'varchar', default: 'patient' })
-  role: UserRole;
+  role!: UserRole;
 
   @OneToOne(() => DoctorProfile, (doctor) => doctor.user, {
     cascade: true,

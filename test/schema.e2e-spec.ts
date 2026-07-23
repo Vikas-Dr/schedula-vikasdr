@@ -42,7 +42,6 @@ describe('Database Schema (e2e)', () => {
         specialization: 'Neurology',
         bio: 'Expert in neurodegenerative disorders.',
         yearsOfExperience: '10',
-        fee: '200',
       },
     };
 
@@ -54,13 +53,16 @@ describe('Database Schema (e2e)', () => {
     const fetchedUser = await usersService.findOneById(savedUser.id);
     expect(fetchedUser).toBeDefined();
     expect(fetchedUser?.doctorProfile).toBeDefined();
-    
+
     // Assert all doctor fields from the ER diagram schema
     const profile = fetchedUser?.doctorProfile;
-    expect(profile?.specialization).toBe(doctorData.doctorProfile.specialization);
+    expect(profile?.specialization).toBe(
+      doctorData.doctorProfile.specialization,
+    );
     expect(profile?.bio).toBe(doctorData.doctorProfile.bio);
-    expect(profile?.yearsOfExperience).toBe(doctorData.doctorProfile.yearsOfExperience);
-    expect(profile?.fee).toBe(doctorData.doctorProfile.fee);
+    expect(profile?.yearsOfExperience).toBe(
+      doctorData.doctorProfile.yearsOfExperience,
+    );
     expect(profile?.isVerified).toBe(false);
   });
 
@@ -93,6 +95,8 @@ describe('Database Schema (e2e)', () => {
     expect(profile?.birthday).toBe(patientData.patientProfile.birthday);
     expect(profile?.gender).toBe(patientData.patientProfile.gender);
     expect(profile?.bloodType).toBe(patientData.patientProfile.bloodType);
-    expect(profile?.emergencyContact).toBe(patientData.patientProfile.emergencyContact);
+    expect(profile?.emergencyContact).toBe(
+      patientData.patientProfile.emergencyContact,
+    );
   });
 });
