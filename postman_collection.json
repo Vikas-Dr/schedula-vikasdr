@@ -1,8 +1,8 @@
 {
   "info": {
-    "_postman_id": "doctor-availability-collection",
-    "name": "Schedula - Doctor Availability API",
-    "description": "Complete Postman collection for testing Doctor Availability (Recurring + Custom Override) APIs with success cases, validation rules, and edge cases.",
+    "_postman_id": "doctor-availability-vscode-collection",
+    "name": "Schedula - Doctor Availability API (VS Code Collection)",
+    "description": "Complete Postman Collection for VS Code Postman Extension & Postman Desktop. Includes automated variable auto-capturing for tokens and slot IDs.",
     "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
   },
   "variable": [
@@ -13,7 +13,7 @@
     },
     {
       "key": "doctorToken",
-      "value": "REPLACE_WITH_YOUR_DOCTOR_JWT_TOKEN",
+      "value": "YOUR_DOCTOR_JWT_TOKEN",
       "type": "string"
     },
     {
@@ -29,10 +29,63 @@
   ],
   "item": [
     {
+      "name": "0. Auth Helpers",
+      "item": [
+        {
+          "name": "0.1 Login Doctor (Auto-saves Token)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "var jsonData = pm.response.json();",
+                  "if (jsonData.token) { pm.collectionVariables.set('doctorToken', jsonData.token); }",
+                  "if (jsonData.access_token) { pm.collectionVariables.set('doctorToken', jsonData.access_token); }"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"email\": \"doctor@example.com\",\n  \"password\": \"password123\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/auth/login",
+              "host": ["{{baseUrl}}"],
+              "path": ["auth", "login"]
+            },
+            "description": "Log in doctor to automatically save doctorToken into collection variable."
+          },
+          "response": []
+        }
+      ]
+    },
+    {
       "name": "1. Recurring Weekly Availability",
       "item": [
         {
           "name": "1.1 Create Recurring Availability (Monday Window 1)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "var jsonData = pm.response.json();",
+                  "if (jsonData.id) { pm.collectionVariables.set('recurringSlotId', jsonData.id); }"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
           "request": {
             "method": "POST",
             "header": [
@@ -54,7 +107,7 @@
               "host": ["{{baseUrl}}"],
               "path": ["doctor", "availability"]
             },
-            "description": "Create weekly recurring availability slot for Monday (10:00 AM - 1:00 PM)."
+            "description": "Create weekly recurring availability for Monday (10:00 AM - 1:00 PM)."
           },
           "response": []
         },
@@ -127,7 +180,7 @@
               "host": ["{{baseUrl}}"],
               "path": ["doctor", "availability"]
             },
-            "description": "Retrieve all recurring weekly availability slots for the authenticated doctor."
+            "description": "Retrieve all recurring weekly availability slots for the doctor."
           },
           "response": []
         },
@@ -150,18 +203,11 @@
               "raw": "{\n  \"startTime\": \"09:00 AM\",\n  \"endTime\": \"12:00 PM\"\n}"
             },
             "url": {
-              "raw": "{{baseUrl}}/doctor/availability/:id",
+              "raw": "{{baseUrl}}/doctor/availability/{{recurringSlotId}}",
               "host": ["{{baseUrl}}"],
-              "path": ["doctor", "availability", ":id"],
-              "variable": [
-                {
-                  "key": "id",
-                  "value": "REPLACE_WITH_RECURRING_SLOT_ID",
-                  "description": "ID of recurring availability slot"
-                }
-              ]
+              "path": ["doctor", "availability", "{{recurringSlotId}}"]
             },
-            "description": "Update specific recurring availability slot by ID."
+            "description": "Update recurring availability slot by ID."
           },
           "response": []
         },
@@ -176,18 +222,11 @@
               }
             ],
             "url": {
-              "raw": "{{baseUrl}}/doctor/availability/:id",
+              "raw": "{{baseUrl}}/doctor/availability/{{recurringSlotId}}",
               "host": ["{{baseUrl}}"],
-              "path": ["doctor", "availability", ":id"],
-              "variable": [
-                {
-                  "key": "id",
-                  "value": "REPLACE_WITH_RECURRING_SLOT_ID",
-                  "description": "ID of recurring availability slot"
-                }
-              ]
+              "path": ["doctor", "availability", "{{recurringSlotId}}"]
             },
-            "description": "Delete specific recurring availability slot by ID."
+            "description": "Delete recurring availability slot by ID."
           },
           "response": []
         }
@@ -198,6 +237,18 @@
       "item": [
         {
           "name": "2.1 Create Custom Date Override (2026-06-15)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "var jsonData = pm.response.json();",
+                  "if (jsonData.id) { pm.collectionVariables.set('overrideSlotId', jsonData.id); }"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
           "request": {
             "method": "POST",
             "header": [
@@ -253,16 +304,9 @@
               }
             ],
             "url": {
-              "raw": "{{baseUrl}}/doctor/availability/override/:id",
+              "raw": "{{baseUrl}}/doctor/availability/override/{{overrideSlotId}}",
               "host": ["{{baseUrl}}"],
-              "path": ["doctor", "availability", "override", ":id"],
-              "variable": [
-                {
-                  "key": "id",
-                  "value": "REPLACE_WITH_OVERRIDE_ID",
-                  "description": "ID of custom override slot"
-                }
-              ]
+              "path": ["doctor", "availability", "override", "{{overrideSlotId}}"]
             },
             "description": "Delete custom date override by ID."
           },
