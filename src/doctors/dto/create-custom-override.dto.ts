@@ -1,5 +1,6 @@
 import {
   IsBoolean,
+  IsEnum,
   IsInt,
   IsNotEmpty,
   IsOptional,
@@ -31,5 +32,6 @@ export class CreateCustomOverrideDto {
 
   @IsOptional()
   @IsString()
-  type?: string;
+  @IsEnum(['stream', 'wave', 'recurring'])
+  type?: 'stream' | 'wave' | 'recurring';
 }

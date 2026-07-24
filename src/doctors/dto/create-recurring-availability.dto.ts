@@ -1,9 +1,21 @@
-import { IsInt, IsNotEmpty, IsOptional, IsString, Min } from 'class-validator';
+import {
+  IsArray,
+  IsEnum,
+  IsInt,
+  IsNotEmpty,
+  IsOptional,
+  IsString,
+  Min,
+} from 'class-validator';
 
 export class CreateRecurringAvailabilityDto {
-  @IsNotEmpty()
-  @IsString()
-  dayOfWeek!: string;
+  @IsOptional()
+  dayOfWeek?: string | string[];
+
+  @IsOptional()
+  @IsArray()
+  @IsString({ each: true })
+  daysOfWeek?: string[];
 
   @IsNotEmpty()
   @IsString()
@@ -20,5 +32,6 @@ export class CreateRecurringAvailabilityDto {
 
   @IsOptional()
   @IsString()
-  type?: string;
+  @IsEnum(['stream', 'wave', 'recurring'])
+  type?: 'stream' | 'wave' | 'recurring';
 }

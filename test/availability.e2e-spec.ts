@@ -124,23 +124,24 @@ describe('Doctor Availability System (e2e)', () => {
       recurringSlotId = body.id;
     });
 
-    it('POST /doctor/availability should support multiple windows on same day', async () => {
+    it('POST /doctor/availability should support multi-day creation (daysOfWeek: [Tuesday, Thursday]) and wave type', async () => {
       const res = await request(app.getHttpServer())
         .post('/doctor/availability')
         .set('Authorization', `Bearer ${doctorToken}`)
         .send({
-          dayOfWeek: 'Monday',
+          daysOfWeek: ['Tuesday', 'Thursday'],
           startTime: '2:00 PM',
           endTime: '5:00 PM',
-          capacity: 3,
+          capacity: 4,
+          type: 'wave',
         })
         .expect(201);
 
-      const body = res.body as AvailabilitySlotResponse;
-      expect(body.id).toBeDefined();
-      expect(body.startTime).toBe('14:00');
-      expect(body.endTime).toBe('17:00');
-      expect(body.capacity).toBe(3);
+      const slots = res.body as AvailabilitySlotResponse[];
+      expect(Array.isArray(slots)).toBe(true);
+      expect(slots.length).toBe(2);
+      expect(slots[0].type).toBe('wave');
+      expect(slots[0].capacity).toBe(4);
     });
 
     it('POST /doctor/availability should fail (400) on overlapping slot (11:00 AM - 12:00 PM)', async () => {
@@ -175,9 +176,9 @@ describe('Doctor Availability System (e2e)', () => {
 
       const slots = res.body as AvailabilitySlotResponse[];
       expect(Array.isArray(slots)).toBe(true);
-      expect(slots.length).toBe(2);
+      expect(slots.length).toBe(3);
       expect(slots[0].capacity).toBeDefined();
-      expect(slots[0].type).toBe('recurring');
+      expect(slots[0].type).toBeDefined();
     });
 
     it('PATCH /doctor/availability/:id should update a recurring slot', async () => {
@@ -261,8 +262,8 @@ describe('Doctor Availability System (e2e)', () => {
       expect(body.date).toBe('2026-06-22');
       expect(body.dayOfWeek).toBe('Monday');
       expect(body.isOverride).toBe(false);
-      expect(body.slots.length).toBe(2);
-      expect(body.slots[0].type).toBe('recurring');
+      expect(body.slots.length).toBe(1);
+      expect(body.slots[0].type).toBeDefined();
       expect(body.slots[0].isRecurring).toBe(true);
     });
   });

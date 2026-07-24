@@ -178,26 +178,48 @@ describe('DoctorsService', () => {
   });
 
   describe('Recurring Availability', () => {
-    it('should create recurring availability with capacity and type successfully', async () => {
+    it('should create recurring availability with capacity and wave type successfully', async () => {
       userRepo.findOne.mockResolvedValue({
         ...mockUser,
         doctorProfile: mockDoctorProfile,
       });
       recurringRepo.find.mockResolvedValue([]);
 
-      const result = await service.createRecurringAvailability('doc-uuid-1', {
+      const result = (await service.createRecurringAvailability('doc-uuid-1', {
         dayOfWeek: 'Monday',
         startTime: '10:00 AM',
         endTime: '1:00 PM',
         capacity: 5,
-        type: 'recurring',
-      });
+        type: 'wave',
+      })) as RecurringAvailability;
 
       expect(result.dayOfWeek).toBe('Monday');
       expect(result.startTime).toBe('10:00');
       expect(result.endTime).toBe('13:00');
       expect(result.capacity).toBe(5);
-      expect(result.type).toBe('recurring');
+      expect(result.type).toBe('wave');
+    });
+
+    it('should create recurring availability for multiple days (Monday, Wednesday, Friday)', async () => {
+      userRepo.findOne.mockResolvedValue({
+        ...mockUser,
+        doctorProfile: mockDoctorProfile,
+      });
+      recurringRepo.find.mockResolvedValue([]);
+
+      const result = (await service.createRecurringAvailability('doc-uuid-1', {
+        daysOfWeek: ['Monday', 'Wednesday', 'Friday'],
+        startTime: '10:00 AM',
+        endTime: '1:00 PM',
+        capacity: 4,
+        type: 'stream',
+      })) as RecurringAvailability[];
+
+      expect(Array.isArray(result)).toBe(true);
+      expect(result.length).toBe(3);
+      expect(result[0].dayOfWeek).toBe('Monday');
+      expect(result[1].dayOfWeek).toBe('Wednesday');
+      expect(result[2].dayOfWeek).toBe('Friday');
     });
 
     it('should throw BadRequestException on invalid time range (e.g. 3 PM to 1 PM)', async () => {

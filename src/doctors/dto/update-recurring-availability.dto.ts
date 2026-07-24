@@ -1,4 +1,4 @@
-import { IsInt, IsOptional, IsString, Min } from 'class-validator';
+import { IsEnum, IsInt, IsOptional, IsString, Min } from 'class-validator';
 
 export class UpdateRecurringAvailabilityDto {
   @IsOptional()
@@ -20,5 +20,6 @@ export class UpdateRecurringAvailabilityDto {
 
   @IsOptional()
   @IsString()
-  type?: string;
+  @IsEnum(['stream', 'wave', 'recurring'])
+  type?: 'stream' | 'wave' | 'recurring';
 }

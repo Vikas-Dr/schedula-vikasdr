@@ -2,7 +2,7 @@
   "info": {
     "_postman_id": "doctor-availability-vscode-collection",
     "name": "Schedula - Doctor Availability API (VS Code Collection)",
-    "description": "Complete Postman Collection for VS Code Postman Extension & Postman Desktop. Features capacity, type (recurring vs stream), token auto-saving, recurring slots, custom date overrides, and edge case testing.",
+    "description": "Complete Postman Collection for VS Code Postman Extension & Postman Desktop. Features multi-day recurring creation (daysOfWeek), wave & stream types, capacity, token auto-saving, custom date overrides, and edge case testing.",
     "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
   },
   "variable": [
@@ -136,7 +136,7 @@
       "name": "1. Recurring Weekly Availability",
       "item": [
         {
-          "name": "1.1 Create Recurring Availability (Monday - Capacity: 5, Type: recurring)",
+          "name": "1.1 Create Recurring Availability (Single Day - Stream Type)",
           "event": [
             {
               "listen": "test",
@@ -163,19 +163,19 @@
             ],
             "body": {
               "mode": "raw",
-              "raw": "{\n  \"dayOfWeek\": \"Monday\",\n  \"startTime\": \"10:00 AM\",\n  \"endTime\": \"1:00 PM\",\n  \"capacity\": 5,\n  \"type\": \"recurring\"\n}"
+              "raw": "{\n  \"dayOfWeek\": \"Monday\",\n  \"startTime\": \"10:00 AM\",\n  \"endTime\": \"1:00 PM\",\n  \"capacity\": 5,\n  \"type\": \"stream\"\n}"
             },
             "url": {
               "raw": "{{baseUrl}}/doctor/availability",
               "host": ["{{baseUrl}}"],
               "path": ["doctor", "availability"]
             },
-            "description": "Create weekly recurring availability for Monday with capacity (5 patients) and type='recurring'."
+            "description": "Create weekly recurring availability for Monday with stream type and capacity 5."
           },
           "response": []
         },
         {
-          "name": "1.2 Create Recurring Availability (Monday Window 2 - Capacity: 3)",
+          "name": "1.2 Create Recurring Availability (Multi-day: Monday, Wednesday, Friday - Wave Type)",
           "request": {
             "method": "POST",
             "header": [
@@ -190,46 +190,19 @@
             ],
             "body": {
               "mode": "raw",
-              "raw": "{\n  \"dayOfWeek\": \"Monday\",\n  \"startTime\": \"2:00 PM\",\n  \"endTime\": \"5:00 PM\",\n  \"capacity\": 3,\n  \"type\": \"recurring\"\n}"
+              "raw": "{\n  \"daysOfWeek\": [\"Monday\", \"Wednesday\", \"Friday\"],\n  \"startTime\": \"2:00 PM\",\n  \"endTime\": \"5:00 PM\",\n  \"capacity\": 4,\n  \"type\": \"wave\"\n}"
             },
             "url": {
               "raw": "{{baseUrl}}/doctor/availability",
               "host": ["{{baseUrl}}"],
               "path": ["doctor", "availability"]
             },
-            "description": "Demonstrates multiple non-overlapping recurring time windows on the same day."
+            "description": "Create weekly recurring availability for 1 or more days (Monday, Wednesday, Friday) with wave type and capacity 4."
           },
           "response": []
         },
         {
-          "name": "1.3 Create Recurring Availability (Tuesday)",
-          "request": {
-            "method": "POST",
-            "header": [
-              {
-                "key": "Content-Type",
-                "value": "application/json"
-              },
-              {
-                "key": "Authorization",
-                "value": "Bearer {{doctorToken}}"
-              }
-            ],
-            "body": {
-              "mode": "raw",
-              "raw": "{\n  \"dayOfWeek\": \"Tuesday\",\n  \"startTime\": \"14:00\",\n  \"endTime\": \"17:00\",\n  \"capacity\": 4,\n  \"type\": \"recurring\"\n}"
-            },
-            "url": {
-              "raw": "{{baseUrl}}/doctor/availability",
-              "host": ["{{baseUrl}}"],
-              "path": ["doctor", "availability"]
-            },
-            "description": "Create weekly recurring availability for Tuesday (2:00 PM - 5:00 PM)."
-          },
-          "response": []
-        },
-        {
-          "name": "1.4 Get Recurring Availability (Displays capacity & type)",
+          "name": "1.3 Get Recurring Availability (Shows stream & wave types)",
           "request": {
             "method": "GET",
             "header": [
@@ -243,12 +216,12 @@
               "host": ["{{baseUrl}}"],
               "path": ["doctor", "availability"]
             },
-            "description": "Retrieve all recurring weekly availability slots for the doctor showing capacity and type."
+            "description": "Retrieve all recurring weekly availability slots showing stream/wave types and capacities."
           },
           "response": []
         },
         {
-          "name": "1.5 Update Recurring Availability Slot",
+          "name": "1.4 Update Recurring Availability Slot",
           "request": {
             "method": "PATCH",
             "header": [
@@ -263,19 +236,19 @@
             ],
             "body": {
               "mode": "raw",
-              "raw": "{\n  \"startTime\": \"09:00 AM\",\n  \"endTime\": \"12:00 PM\",\n  \"capacity\": 6,\n  \"type\": \"recurring\"\n}"
+              "raw": "{\n  \"startTime\": \"09:00 AM\",\n  \"endTime\": \"12:00 PM\",\n  \"capacity\": 6,\n  \"type\": \"wave\"\n}"
             },
             "url": {
               "raw": "{{baseUrl}}/doctor/availability/{{recurringSlotId}}",
               "host": ["{{baseUrl}}"],
               "path": ["doctor", "availability", "{{recurringSlotId}}"]
             },
-            "description": "Update recurring availability slot time, capacity, and type by ID."
+            "description": "Update recurring slot time, capacity, and wave/stream type."
           },
           "response": []
         },
         {
-          "name": "1.6 Delete Recurring Availability Slot",
+          "name": "1.5 Delete Recurring Availability Slot",
           "request": {
             "method": "DELETE",
             "header": [
@@ -296,10 +269,10 @@
       ]
     },
     {
-      "name": "2. Custom Date Override (Stream / Non-Recurring)",
+      "name": "2. Custom Date Override (Stream & Wave Modes)",
       "item": [
         {
-          "name": "2.1 Create Custom Date Override (2026-06-15 - Capacity: 2, Type: stream)",
+          "name": "2.1 Create Custom Date Override (Stream Type)",
           "event": [
             {
               "listen": "test",
@@ -333,12 +306,39 @@
               "host": ["{{baseUrl}}"],
               "path": ["doctor", "availability", "override"]
             },
-            "description": "Override recurring availability for a specific date (2026-06-15) with capacity (2 patients) and type='stream'."
+            "description": "Override recurring availability for a specific date (2026-06-15) with stream type."
           },
           "response": []
         },
         {
-          "name": "2.2 Get Custom Overrides (Displays capacity & type: stream)",
+          "name": "2.2 Create Custom Date Override (Wave Type)",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{doctorToken}}"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"date\": \"2026-06-16\",\n  \"startTime\": \"10:00 AM\",\n  \"endTime\": \"12:00 PM\",\n  \"isAvailable\": true,\n  \"capacity\": 6,\n  \"type\": \"wave\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/doctor/availability/override",
+              "host": ["{{baseUrl}}"],
+              "path": ["doctor", "availability", "override"]
+            },
+            "description": "Override recurring availability for a specific date (2026-06-16) with wave type."
+          },
+          "response": []
+        },
+        {
+          "name": "2.3 Get Custom Overrides",
           "request": {
             "method": "GET",
             "header": [
@@ -352,12 +352,12 @@
               "host": ["{{baseUrl}}"],
               "path": ["doctor", "availability", "override"]
             },
-            "description": "List all custom stream overrides for the doctor showing capacity and type."
+            "description": "List all custom date overrides showing stream and wave types."
           },
           "response": []
         },
         {
-          "name": "2.3 Delete Custom Override Slot",
+          "name": "2.4 Delete Custom Override Slot",
           "request": {
             "method": "DELETE",
             "header": [
@@ -378,10 +378,10 @@
       ]
     },
     {
-      "name": "3. Effective Date Availability Query (Shows recurring vs stream)",
+      "name": "3. Effective Date Availability Query",
       "item": [
         {
-          "name": "3.1 Get Availability for Date (Stream Override Active - Shows type: stream, isRecurring: false)",
+          "name": "3.1 Get Availability for Date (Custom Override Active - Shows stream/wave, isRecurring: false)",
           "request": {
             "method": "GET",
             "header": [
@@ -402,12 +402,12 @@
                 }
               ]
             },
-            "description": "Queries availability for 2026-06-15. Returns custom override slots showing type='stream', capacity, and isRecurring=false."
+            "description": "Queries availability for 2026-06-15. Returns custom override slots showing type ('stream'/'wave'), capacity, and isRecurring=false."
           },
           "response": []
         },
         {
-          "name": "3.2 Get Availability for Date (Fallback to Recurring - Shows type: recurring, isRecurring: true)",
+          "name": "3.2 Get Availability for Date (Fallback to Recurring - Shows type, isRecurring: true)",
           "request": {
             "method": "GET",
             "header": [
@@ -428,7 +428,7 @@
                 }
               ]
             },
-            "description": "Queries availability for 2026-06-22 (Monday). Returns recurring weekly Monday slots showing type='recurring', capacity, and isRecurring=true."
+            "description": "Queries availability for 2026-06-22 (Monday). Returns recurring weekly Monday slots showing type ('stream'/'wave'), capacity, and isRecurring=true."
           },
           "response": []
         }

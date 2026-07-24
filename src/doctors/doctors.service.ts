@@ -127,35 +127,63 @@ export class DoctorsService {
     dto: CreateRecurringAvailabilityDto,
   ) {
     const doctorProfile = await this.getDoctorProfileByUserId(userId);
-    const dayOfWeek = normalizeDayOfWeek(dto.dayOfWeek);
+
+    // Extract target days (supports daysOfWeek array or dayOfWeek string/array)
+    let rawDays: string[] = [];
+    if (
+      dto.daysOfWeek &&
+      Array.isArray(dto.daysOfWeek) &&
+      dto.daysOfWeek.length > 0
+    ) {
+      rawDays = dto.daysOfWeek;
+    } else if (dto.dayOfWeek) {
+      rawDays = Array.isArray(dto.dayOfWeek) ? dto.dayOfWeek : [dto.dayOfWeek];
+    }
+
+    if (rawDays.length === 0) {
+      throw new BadRequestException(
+        'At least one day of week is required in dayOfWeek or daysOfWeek',
+      );
+    }
+
+    const normalizedDays = rawDays.map((d) => normalizeDayOfWeek(d));
     validateTimeRange(dto.startTime, dto.endTime);
 
     const startTime = normalizeTimeString(dto.startTime);
     const endTime = normalizeTimeString(dto.endTime);
+    const capacity = dto.capacity ?? 1;
+    const type = dto.type ?? 'stream';
 
-    // Check overlaps with existing slots for this doctor on the same day
-    const existingSlots = await this.recurringRepository.find({
-      where: { doctor: { id: doctorProfile.id }, dayOfWeek },
-    });
+    const createdSlots: RecurringAvailability[] = [];
 
-    for (const slot of existingSlots) {
-      if (isOverlapping(slot.startTime, slot.endTime, startTime, endTime)) {
-        throw new BadRequestException(
-          `Overlapping time slot: Time window ${startTime} - ${endTime} conflicts with existing slot (${slot.startTime} - ${slot.endTime}) for ${dayOfWeek}.`,
-        );
+    for (const dayOfWeek of normalizedDays) {
+      // Check overlaps with existing slots for this doctor on the same day
+      const existingSlots = await this.recurringRepository.find({
+        where: { doctor: { id: doctorProfile.id }, dayOfWeek },
+      });
+
+      for (const slot of existingSlots) {
+        if (isOverlapping(slot.startTime, slot.endTime, startTime, endTime)) {
+          throw new BadRequestException(
+            `Overlapping time slot: Time window ${startTime} - ${endTime} conflicts with existing slot (${slot.startTime} - ${slot.endTime}) for ${dayOfWeek}.`,
+          );
+        }
       }
+
+      const slot = this.recurringRepository.create({
+        dayOfWeek,
+        startTime,
+        endTime,
+        capacity,
+        type,
+        doctor: doctorProfile,
+      });
+
+      const saved = await this.recurringRepository.save(slot);
+      createdSlots.push(saved);
     }
 
-    const slot = this.recurringRepository.create({
-      dayOfWeek,
-      startTime,
-      endTime,
-      capacity: dto.capacity ?? 1,
-      type: dto.type ?? 'recurring',
-      doctor: doctorProfile,
-    });
-
-    return this.recurringRepository.save(slot);
+    return createdSlots.length === 1 ? createdSlots[0] : createdSlots;
   }
 
   async getRecurringAvailability(userId: string, doctorId?: string) {
@@ -374,7 +402,7 @@ export class DoctorsService {
         endTime: r.endTime,
         isAvailable: true,
         capacity: r.capacity ?? 1,
-        type: r.type ?? 'recurring',
+        type: r.type ?? 'stream',
         isRecurring: true,
       })),
     };
