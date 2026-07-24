@@ -32,6 +32,18 @@ export class RecurringAvailability {
   @Column({ name: 'end_time' })
   endTime!: string;
 
+  @Column({ name: 'scheduling_type', type: 'varchar', default: 'STREAM' })
+  schedulingType!: 'STREAM' | 'WAVE';
+
+  @Column({ name: 'slot_duration', type: 'int', nullable: true })
+  slotDuration?: number;
+
+  @Column({ name: 'buffer_time', type: 'int', default: 0 })
+  bufferTime?: number;
+
+  @Column({ name: 'max_capacity', type: 'int', default: 1 })
+  maxCapacity!: number;
+
   @Column({ type: 'int', default: 1 })
   capacity!: number;
 

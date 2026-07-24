@@ -31,7 +31,25 @@ export class CreateCustomOverrideDto {
   capacity?: number;
 
   @IsOptional()
+  @IsEnum(['STREAM', 'WAVE'])
+  schedulingType?: 'STREAM' | 'WAVE';
+
+  @IsOptional()
+  @IsInt()
+  @Min(1)
+  slotDuration?: number;
+
+  @IsOptional()
+  @IsInt()
+  @Min(0)
+  bufferTime?: number;
+
+  @IsOptional()
+  @IsInt()
+  @Min(1)
+  maxCapacity?: number;
+
+  @IsOptional()
   @IsString()
-  @IsEnum(['stream', 'wave', 'recurring'])
-  type?: 'stream' | 'wave' | 'recurring';
+  type?: string;
 }

@@ -30,6 +30,9 @@ export class DoctorProfile {
   @Column({ name: 'is_verified', default: false })
   isVerified!: boolean;
 
+  @Column({ name: 'scheduling_type', type: 'varchar', default: 'STREAM' })
+  schedulingType!: 'STREAM' | 'WAVE';
+
   @OneToOne(() => User, (user) => user.doctorProfile, { onDelete: 'CASCADE' })
   @JoinColumn()
   user!: User;

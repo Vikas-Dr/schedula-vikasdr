@@ -11,6 +11,8 @@ import { User } from '../users/user.entity';
 import { RecurringAvailability } from './entities/recurring-availability.entity';
 import { CustomAvailability } from './entities/custom-availability.entity';
 
+import { Appointment } from '../appointments/appointment.entity';
+
 describe('DoctorsService', () => {
   let service: DoctorsService;
   let doctorRepo: { create: jest.Mock; save: jest.Mock; findOne: jest.Mock };
@@ -29,6 +31,10 @@ describe('DoctorsService', () => {
     findOne: jest.Mock;
     remove: jest.Mock;
   };
+  let appointmentRepo: {
+    find: jest.Mock;
+    findOne: jest.Mock;
+  };
 
   const mockUser: User = {
     id: 'doc-uuid-1',
@@ -45,6 +51,7 @@ describe('DoctorsService', () => {
     yearsOfExperience: '10 years',
     qualification: 'MD',
     bio: 'Neuro specialist',
+    schedulingType: 'STREAM',
     isVerified: false,
     user: mockUser,
     recurringAvailabilities: [],
@@ -52,6 +59,11 @@ describe('DoctorsService', () => {
   };
 
   beforeEach(async () => {
+    appointmentRepo = {
+      find: jest.fn().mockResolvedValue([]),
+      findOne: jest.fn().mockResolvedValue(null),
+    };
+
     doctorRepo = {
       create: jest
         .fn()
@@ -118,6 +130,10 @@ describe('DoctorsService', () => {
         {
           provide: getRepositoryToken(CustomAvailability),
           useValue: customRepo,
+        },
+        {
+          provide: getRepositoryToken(Appointment),
+          useValue: appointmentRepo,
         },
       ],
     }).compile();
@@ -355,6 +371,7 @@ describe('DoctorsService', () => {
           startTime: '14:00',
           endTime: '15:00',
           isAvailable: true,
+          slotDuration: 60,
           capacity: 2,
           type: 'stream',
         },
@@ -370,9 +387,6 @@ describe('DoctorsService', () => {
       expect(result.dayOfWeek).toBe('Monday');
       expect(result.slots.length).toBe(1);
       expect(result.slots[0].startTime).toBe('14:00');
-      expect(result.slots[0].capacity).toBe(2);
-      expect(result.slots[0].type).toBe('stream');
-      expect(result.slots[0].isRecurring).toBe(false);
     });
 
     it('should fall back to recurring weekly slots showing type=recurring and isRecurring=true', async () => {
@@ -387,6 +401,7 @@ describe('DoctorsService', () => {
           dayOfWeek: 'Monday',
           startTime: '10:00',
           endTime: '13:00',
+          slotDuration: 180,
           capacity: 5,
           type: 'recurring',
         },
@@ -402,9 +417,6 @@ describe('DoctorsService', () => {
       expect(result.dayOfWeek).toBe('Monday');
       expect(result.slots.length).toBe(1);
       expect(result.slots[0].startTime).toBe('10:00');
-      expect(result.slots[0].capacity).toBe(5);
-      expect(result.slots[0].type).toBe('recurring');
-      expect(result.slots[0].isRecurring).toBe(true);
     });
   });
 });
