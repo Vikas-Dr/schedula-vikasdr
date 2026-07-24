@@ -8,6 +8,8 @@ import { DoctorsService } from './doctors.service';
 import { DoctorsController } from './doctors.controller';
 import { UsersModule } from '../users/users.module';
 
+import { Appointment } from '../appointments/appointment.entity';
+
 @Module({
   imports: [
     TypeOrmModule.forFeature([
@@ -15,6 +17,7 @@ import { UsersModule } from '../users/users.module';
       User,
       RecurringAvailability,
       CustomAvailability,
+      Appointment,
     ]),
     UsersModule,
   ],

@@ -15,7 +15,9 @@ import { UpdateDoctorProfileDto } from './dto/update-doctor-profile.dto';
 import { CreateRecurringAvailabilityDto } from './dto/create-recurring-availability.dto';
 import { UpdateRecurringAvailabilityDto } from './dto/update-recurring-availability.dto';
 import { CreateCustomOverrideDto } from './dto/create-custom-override.dto';
+import { Appointment } from '../appointments/appointment.entity';
 import {
+  generateStreamSlots,
   getDayOfWeekFromDate,
   isOverlapping,
   normalizeDayOfWeek,
@@ -35,6 +37,8 @@ export class DoctorsService {
     private readonly recurringRepository: Repository<RecurringAvailability>,
     @InjectRepository(CustomAvailability)
     private readonly customRepository: Repository<CustomAvailability>,
+    @InjectRepository(Appointment)
+    private readonly appointmentRepository: Repository<Appointment>,
   ) {}
 
   async createProfile(userId: string, dto: CreateDoctorProfileDto) {
@@ -67,6 +71,7 @@ export class DoctorsService {
       yearsOfExperience: dto.yearsOfExperience ?? dto.experience,
       qualification: dto.qualification,
       bio: dto.bio ?? dto.profileDetails,
+      schedulingType: dto.schedulingType ?? 'STREAM',
       isVerified: false,
       user,
     });
@@ -115,6 +120,9 @@ export class DoctorsService {
     if (dto.bio !== undefined || dto.profileDetails !== undefined) {
       profile.bio = dto.bio ?? dto.profileDetails;
     }
+    if (dto.schedulingType !== undefined) {
+      profile.schedulingType = dto.schedulingType;
+    }
 
     const savedProfile = await this.doctorRepository.save(profile);
     return this.formatProfileResponse(savedProfile, user);
@@ -127,33 +135,84 @@ export class DoctorsService {
     dto: CreateRecurringAvailabilityDto,
   ) {
     const doctorProfile = await this.getDoctorProfileByUserId(userId);
-    const dayOfWeek = normalizeDayOfWeek(dto.dayOfWeek);
+
+    // Extract target days (supports daysOfWeek array or dayOfWeek string/array)
+    let rawDays: string[] = [];
+    if (
+      dto.daysOfWeek &&
+      Array.isArray(dto.daysOfWeek) &&
+      dto.daysOfWeek.length > 0
+    ) {
+      rawDays = dto.daysOfWeek;
+    } else if (dto.dayOfWeek) {
+      rawDays = Array.isArray(dto.dayOfWeek) ? dto.dayOfWeek : [dto.dayOfWeek];
+    }
+
+    if (rawDays.length === 0) {
+      throw new BadRequestException(
+        'At least one day of week is required in dayOfWeek or daysOfWeek',
+      );
+    }
+
+    const normalizedDays = rawDays.map((d) => normalizeDayOfWeek(d));
     validateTimeRange(dto.startTime, dto.endTime);
 
     const startTime = normalizeTimeString(dto.startTime);
     const endTime = normalizeTimeString(dto.endTime);
 
-    // Check overlaps with existing slots for this doctor on the same day
-    const existingSlots = await this.recurringRepository.find({
-      where: { doctor: { id: doctorProfile.id }, dayOfWeek },
-    });
+    const schedulingType =
+      dto.schedulingType ?? doctorProfile.schedulingType ?? 'STREAM';
+    const slotDuration = dto.slotDuration ?? 15;
+    const bufferTime = dto.bufferTime ?? 0;
+    const maxCapacity = dto.maxCapacity ?? dto.capacity ?? 1;
 
-    for (const slot of existingSlots) {
-      if (isOverlapping(slot.startTime, slot.endTime, startTime, endTime)) {
-        throw new BadRequestException(
-          `Overlapping time slot: Time window ${startTime} - ${endTime} conflicts with existing slot (${slot.startTime} - ${slot.endTime}) for ${dayOfWeek}.`,
-        );
+    if (schedulingType === 'STREAM') {
+      if (slotDuration <= 0) {
+        throw new BadRequestException('Invalid slot duration');
+      }
+      if (bufferTime < 0) {
+        throw new BadRequestException('Invalid buffer time');
+      }
+    } else if (schedulingType === 'WAVE') {
+      if (maxCapacity <= 0) {
+        throw new BadRequestException('Invalid maximum patient capacity');
       }
     }
 
-    const slot = this.recurringRepository.create({
-      dayOfWeek,
-      startTime,
-      endTime,
-      doctor: doctorProfile,
-    });
+    const createdSlots: RecurringAvailability[] = [];
 
-    return this.recurringRepository.save(slot);
+    for (const dayOfWeek of normalizedDays) {
+      // Check overlaps with existing slots for this doctor on the same day
+      const existingSlots = await this.recurringRepository.find({
+        where: { doctor: { id: doctorProfile.id }, dayOfWeek },
+      });
+
+      for (const slot of existingSlots) {
+        if (isOverlapping(slot.startTime, slot.endTime, startTime, endTime)) {
+          throw new BadRequestException(
+            `Overlapping time slot: Time window ${startTime} - ${endTime} conflicts with existing slot (${slot.startTime} - ${slot.endTime}) for ${dayOfWeek}.`,
+          );
+        }
+      }
+
+      const slot = this.recurringRepository.create({
+        dayOfWeek,
+        startTime,
+        endTime,
+        schedulingType,
+        slotDuration,
+        bufferTime,
+        maxCapacity,
+        capacity: maxCapacity,
+        type: dto.type ?? schedulingType.toLowerCase(),
+        doctor: doctorProfile,
+      });
+
+      const saved = await this.recurringRepository.save(slot);
+      createdSlots.push(saved);
+    }
+
+    return createdSlots.length === 1 ? createdSlots[0] : createdSlots;
   }
 
   async getRecurringAvailability(userId: string, doctorId?: string) {
@@ -223,6 +282,11 @@ export class DoctorsService {
     slot.dayOfWeek = targetDay;
     slot.startTime = targetStart;
     slot.endTime = targetEnd;
+    if (dto.capacity !== undefined) {
+      slot.capacity = dto.capacity;
+      slot.maxCapacity = dto.capacity;
+    }
+    if (dto.type !== undefined) slot.type = dto.type;
 
     return this.recurringRepository.save(slot);
   }
@@ -253,6 +317,25 @@ export class DoctorsService {
     const startTime = normalizeTimeString(dto.startTime);
     const endTime = normalizeTimeString(dto.endTime);
 
+    const schedulingType =
+      dto.schedulingType ?? doctorProfile.schedulingType ?? 'STREAM';
+    const slotDuration = dto.slotDuration ?? 15;
+    const bufferTime = dto.bufferTime ?? 0;
+    const maxCapacity = dto.maxCapacity ?? dto.capacity ?? 1;
+
+    if (schedulingType === 'STREAM') {
+      if (slotDuration <= 0) {
+        throw new BadRequestException('Invalid slot duration');
+      }
+      if (bufferTime < 0) {
+        throw new BadRequestException('Invalid buffer time');
+      }
+    } else if (schedulingType === 'WAVE') {
+      if (maxCapacity <= 0) {
+        throw new BadRequestException('Invalid maximum patient capacity');
+      }
+    }
+
     // Check overlap with existing custom overrides on the same date
     const existingOverrides = await this.customRepository.find({
       where: { doctor: { id: doctorProfile.id }, date },
@@ -273,6 +356,12 @@ export class DoctorsService {
       startTime,
       endTime,
       isAvailable,
+      schedulingType,
+      slotDuration,
+      bufferTime,
+      maxCapacity,
+      capacity: maxCapacity,
+      type: dto.type ?? schedulingType.toLowerCase(),
       doctor: doctorProfile,
     });
 
@@ -327,45 +416,130 @@ export class DoctorsService {
       );
     }
 
-    // 1. Check custom overrides for the specific date
+    // 1. Fetch custom overrides and recurring slots
     const customOverrides = await this.customRepository.find({
       where: { doctor: { id: doctorProfile.id }, date },
       order: { startTime: 'ASC' },
     });
 
-    if (customOverrides.length > 0) {
-      return {
-        date,
-        dayOfWeek,
-        isOverride: true,
-        doctorId: doctorProfile.id,
-        slots: customOverrides.map((c) => ({
-          id: c.id,
-          startTime: c.startTime,
-          endTime: c.endTime,
-          isAvailable: c.isAvailable,
-        })),
-      };
-    }
-
-    // 2. Fall back to recurring weekly availability for that day of week
     const recurringSlots = await this.recurringRepository.find({
       where: { doctor: { id: doctorProfile.id }, dayOfWeek },
       order: { startTime: 'ASC' },
     });
 
-    return {
-      date,
-      dayOfWeek,
-      isOverride: false,
-      doctorId: doctorProfile.id,
-      slots: recurringSlots.map((r) => ({
-        id: r.id,
-        startTime: r.startTime,
-        endTime: r.endTime,
-        isAvailable: true,
-      })),
-    };
+    // Fetch existing confirmed appointments for doctor on date
+    const existingAppointments = await this.appointmentRepository.find({
+      where: { doctor: { id: doctorProfile.id }, date, status: 'CONFIRMED' },
+    });
+
+    const isOverride = customOverrides.length > 0;
+    const windows = isOverride
+      ? customOverrides.map((c) => ({
+          id: c.id,
+          startTime: c.startTime,
+          endTime: c.endTime,
+          isAvailable: c.isAvailable,
+          schedulingType: c.schedulingType ?? doctorProfile.schedulingType ?? 'STREAM',
+          slotDuration: c.slotDuration ?? 15,
+          bufferTime: c.bufferTime ?? 0,
+          maxCapacity: c.maxCapacity ?? c.capacity ?? 1,
+        }))
+      : recurringSlots.map((r) => ({
+          id: r.id,
+          startTime: r.startTime,
+          endTime: r.endTime,
+          isAvailable: true,
+          schedulingType: r.schedulingType ?? doctorProfile.schedulingType ?? 'STREAM',
+          slotDuration: r.slotDuration ?? 15,
+          bufferTime: r.bufferTime ?? 0,
+          maxCapacity: r.maxCapacity ?? r.capacity ?? 1,
+        }));
+
+    const doctorSchedulingType = doctorProfile.schedulingType ?? 'STREAM';
+
+    if (doctorSchedulingType === 'STREAM') {
+      const generatedSlots: Array<{
+        id: string;
+        startTime: string;
+        endTime: string;
+        appointmentTime: string;
+        isAvailable: boolean;
+        status: 'AVAILABLE' | 'BOOKED';
+        schedulingType: 'STREAM';
+        availabilityId: string;
+      }> = [];
+
+      for (const win of windows) {
+        if (!win.isAvailable) continue;
+        const discreteSlots = generateStreamSlots(
+          win.startTime,
+          win.endTime,
+          win.slotDuration,
+          win.bufferTime,
+        );
+
+        for (const ds of discreteSlots) {
+          const isBooked = existingAppointments.some(
+            (app) => app.startTime === ds.startTime && app.endTime === ds.endTime,
+          );
+
+          generatedSlots.push({
+            id: `${win.id}_${ds.startTime}_${ds.endTime}`,
+            startTime: ds.startTime,
+            endTime: ds.endTime,
+            appointmentTime: `${ds.startTime} - ${ds.endTime}`,
+            isAvailable: !isBooked,
+            status: isBooked ? 'BOOKED' : 'AVAILABLE',
+            schedulingType: 'STREAM',
+            availabilityId: win.id,
+          });
+        }
+      }
+
+      return {
+        date,
+        dayOfWeek,
+        isOverride,
+        doctorId: doctorProfile.id,
+        schedulingType: 'STREAM',
+        slots: generatedSlots,
+      };
+    } else {
+      // WAVE Strategy
+      const waves = windows.map((win) => {
+        const bookedCount = existingAppointments.filter((app) =>
+          isOverlapping(win.startTime, win.endTime, app.startTime, app.endTime),
+        ).length;
+
+        const maxCapacity = win.maxCapacity;
+        const available = Math.max(0, maxCapacity - bookedCount);
+        const isFull = available === 0;
+
+        return {
+          id: win.id,
+          startTime: win.startTime,
+          endTime: win.endTime,
+          timeWindow: `${win.startTime} - ${win.endTime}`,
+          maxCapacity,
+          booked: bookedCount,
+          available,
+          displayAvailability: `Available: ${available}/${maxCapacity}`,
+          isAvailable: !isFull && win.isAvailable,
+          status: isFull ? 'FULL' : 'AVAILABLE',
+          schedulingType: 'WAVE',
+        };
+      });
+
+      return {
+        date,
+        dayOfWeek,
+        isOverride,
+        doctorId: doctorProfile.id,
+        schedulingType: 'WAVE',
+        waves,
+        slots: waves,
+      };
+    }
   }
 
   // --- HELPER METHODS ---
@@ -425,6 +599,7 @@ export class DoctorsService {
       yearsOfExperience: profile.yearsOfExperience,
       qualification: profile.qualification,
       bio: profile.bio,
+      schedulingType: profile.schedulingType ?? 'STREAM',
       isVerified: profile.isVerified,
       user: {
         id: user.id,

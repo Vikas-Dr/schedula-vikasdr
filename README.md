@@ -93,6 +93,14 @@ How it works: It links a Patient, a Doctor, and a Slot together. It saves the ap
 Notification (Red):
 What it does: Keeps track of messages sent to users.
 How it works: When something happens (like an appointment is booked), the system creates a notification message linked to the user.
+### 📅 Advanced Doctor Scheduling System (Stream & Wave)
+
+Doctors can choose between two scheduling strategies:
+- **Stream Scheduling**: For exact appointment times (e.g. Specialists, Psychologists). Configurable `slotDuration` and optional `bufferTime`.
+- **Wave Scheduling**: Token-based capacity scheduling within time windows (e.g. General Physicians, OPD clinics). Assigns sequential token numbers (Token 1, Token 2, etc.) up to `maxCapacity`.
+
+Detailed flowcharts and documentation are available in [Document/SCHEDULING-FLOWCHART.md](Document/SCHEDULING-FLOWCHART.md).
+
 🔗 Relationships Summary
 User and Doctor / Patient: One-to-One. A user account can have either a doctor profile or a patient profile.
 Doctor and Slot: One-to-Many. A doctor can set up many different free time slots.

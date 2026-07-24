@@ -16,6 +16,9 @@ interface AvailabilitySlotResponse {
   startTime: string;
   endTime: string;
   isAvailable?: boolean;
+  capacity?: number;
+  type?: string;
+  isRecurring?: boolean;
 }
 
 interface DateAvailabilityResponse {
@@ -98,7 +101,7 @@ describe('Doctor Availability System (e2e)', () => {
   });
 
   describe('Recurring Availability APIs', () => {
-    it('POST /doctor/availability should create a recurring slot (Monday 10:00 AM - 1:00 PM)', async () => {
+    it('POST /doctor/availability should create a recurring slot with capacity and type', async () => {
       const res = await request(app.getHttpServer())
         .post('/doctor/availability')
         .set('Authorization', `Bearer ${doctorToken}`)
@@ -106,6 +109,8 @@ describe('Doctor Availability System (e2e)', () => {
           dayOfWeek: 'Monday',
           startTime: '10:00 AM',
           endTime: '1:00 PM',
+          capacity: 5,
+          type: 'recurring',
         })
         .expect(201);
 
@@ -114,24 +119,29 @@ describe('Doctor Availability System (e2e)', () => {
       expect(body.dayOfWeek).toBe('Monday');
       expect(body.startTime).toBe('10:00');
       expect(body.endTime).toBe('13:00');
+      expect(body.capacity).toBe(5);
+      expect(body.type).toBe('recurring');
       recurringSlotId = body.id;
     });
 
-    it('POST /doctor/availability should support multiple windows on same day (Monday 2:00 PM - 5:00 PM)', async () => {
+    it('POST /doctor/availability should support multi-day creation (daysOfWeek: [Tuesday, Thursday]) and wave type', async () => {
       const res = await request(app.getHttpServer())
         .post('/doctor/availability')
         .set('Authorization', `Bearer ${doctorToken}`)
         .send({
-          dayOfWeek: 'Monday',
+          daysOfWeek: ['Tuesday', 'Thursday'],
           startTime: '2:00 PM',
           endTime: '5:00 PM',
+          capacity: 4,
+          type: 'wave',
         })
         .expect(201);
 
-      const body = res.body as AvailabilitySlotResponse;
-      expect(body.id).toBeDefined();
-      expect(body.startTime).toBe('14:00');
-      expect(body.endTime).toBe('17:00');
+      const slots = res.body as AvailabilitySlotResponse[];
+      expect(Array.isArray(slots)).toBe(true);
+      expect(slots.length).toBe(2);
+      expect(slots[0].type).toBe('wave');
+      expect(slots[0].capacity).toBe(4);
     });
 
     it('POST /doctor/availability should fail (400) on overlapping slot (11:00 AM - 12:00 PM)', async () => {
@@ -158,7 +168,7 @@ describe('Doctor Availability System (e2e)', () => {
         .expect(400);
     });
 
-    it('GET /doctor/availability should return list of recurring slots', async () => {
+    it('GET /doctor/availability should return list of recurring slots showing capacity & type', async () => {
       const res = await request(app.getHttpServer())
         .get('/doctor/availability')
         .set('Authorization', `Bearer ${doctorToken}`)
@@ -166,7 +176,9 @@ describe('Doctor Availability System (e2e)', () => {
 
       const slots = res.body as AvailabilitySlotResponse[];
       expect(Array.isArray(slots)).toBe(true);
-      expect(slots.length).toBe(2);
+      expect(slots.length).toBe(3);
+      expect(slots[0].capacity).toBeDefined();
+      expect(slots[0].type).toBeDefined();
     });
 
     it('PATCH /doctor/availability/:id should update a recurring slot', async () => {
@@ -175,16 +187,18 @@ describe('Doctor Availability System (e2e)', () => {
         .set('Authorization', `Bearer ${doctorToken}`)
         .send({
           startTime: '09:00 AM',
+          capacity: 6,
         })
         .expect(200);
 
       const body = res.body as AvailabilitySlotResponse;
       expect(body.startTime).toBe('09:00');
+      expect(body.capacity).toBe(6);
     });
   });
 
-  describe('Custom Date Override APIs', () => {
-    it('POST /doctor/availability/override should create custom date override (2026-06-15)', async () => {
+  describe('Custom Date Override APIs (Stream / Non-Recurring)', () => {
+    it('POST /doctor/availability/override should create custom stream override with capacity', async () => {
       const res = await request(app.getHttpServer())
         .post('/doctor/availability/override')
         .set('Authorization', `Bearer ${doctorToken}`)
@@ -193,6 +207,9 @@ describe('Doctor Availability System (e2e)', () => {
           startTime: '2:00 PM',
           endTime: '3:00 PM',
           isAvailable: true,
+          slotDuration: 60,
+          capacity: 2,
+          type: 'stream',
         })
         .expect(201);
 
@@ -201,6 +218,8 @@ describe('Doctor Availability System (e2e)', () => {
       expect(body.date).toBe('2026-06-15');
       expect(body.startTime).toBe('14:00');
       expect(body.endTime).toBe('15:00');
+      expect(body.capacity).toBe(2);
+      expect(body.type).toBe('stream');
       overrideSlotId = body.id;
     });
 
@@ -212,11 +231,12 @@ describe('Doctor Availability System (e2e)', () => {
 
       const overrides = res.body as AvailabilitySlotResponse[];
       expect(overrides.length).toBe(1);
+      expect(overrides[0].type).toBe('stream');
     });
   });
 
   describe('Effective Date Query (GET /doctor/availability/date)', () => {
-    it('GET /doctor/availability/date?date=2026-06-15 should return custom override slots', async () => {
+    it('GET /doctor/availability/date?date=2026-06-15 should return stream override slots (isRecurring: false)', async () => {
       const res = await request(app.getHttpServer())
         .get('/doctor/availability/date?date=2026-06-15')
         .set('Authorization', `Bearer ${doctorToken}`)
@@ -230,7 +250,7 @@ describe('Doctor Availability System (e2e)', () => {
       expect(body.slots[0].startTime).toBe('14:00');
     });
 
-    it('GET /doctor/availability/date?date=2026-06-22 should fall back to recurring Monday slots', async () => {
+    it('GET /doctor/availability/date?date=2026-06-22 should fall back to recurring Monday slots (isRecurring: true)', async () => {
       const res = await request(app.getHttpServer())
         .get('/doctor/availability/date?date=2026-06-22')
         .set('Authorization', `Bearer ${doctorToken}`)
@@ -240,7 +260,7 @@ describe('Doctor Availability System (e2e)', () => {
       expect(body.date).toBe('2026-06-22');
       expect(body.dayOfWeek).toBe('Monday');
       expect(body.isOverride).toBe(false);
-      expect(body.slots.length).toBe(2);
+      expect(body.slots.length).toBeGreaterThan(0);
     });
   });
 

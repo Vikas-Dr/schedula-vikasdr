@@ -1,5 +1,5 @@
 import { Transform } from 'class-transformer';
-import { IsOptional, IsString } from 'class-validator';
+import { IsEnum, IsOptional, IsString } from 'class-validator';
 
 export class CreateDoctorProfileDto {
   @IsOptional()
@@ -39,4 +39,8 @@ export class CreateDoctorProfileDto {
   @IsOptional()
   @IsString()
   profileDetails?: string;
+
+  @IsOptional()
+  @IsEnum(['STREAM', 'WAVE'])
+  schedulingType?: 'STREAM' | 'WAVE';
 }
