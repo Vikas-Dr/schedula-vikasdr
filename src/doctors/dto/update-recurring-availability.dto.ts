@@ -1,4 +1,4 @@
-import { IsOptional, IsString } from 'class-validator';
+import { IsInt, IsOptional, IsString, Min } from 'class-validator';
 
 export class UpdateRecurringAvailabilityDto {
   @IsOptional()
@@ -12,4 +12,13 @@ export class UpdateRecurringAvailabilityDto {
   @IsOptional()
   @IsString()
   endTime?: string;
+
+  @IsOptional()
+  @IsInt()
+  @Min(1)
+  capacity?: number;
+
+  @IsOptional()
+  @IsString()
+  type?: string;
 }

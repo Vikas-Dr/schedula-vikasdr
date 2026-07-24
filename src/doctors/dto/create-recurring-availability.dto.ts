@@ -1,4 +1,4 @@
-import { IsNotEmpty, IsString } from 'class-validator';
+import { IsInt, IsNotEmpty, IsOptional, IsString, Min } from 'class-validator';
 
 export class CreateRecurringAvailabilityDto {
   @IsNotEmpty()
@@ -12,4 +12,13 @@ export class CreateRecurringAvailabilityDto {
   @IsNotEmpty()
   @IsString()
   endTime!: string;
+
+  @IsOptional()
+  @IsInt()
+  @Min(1)
+  capacity?: number;
+
+  @IsOptional()
+  @IsString()
+  type?: string;
 }

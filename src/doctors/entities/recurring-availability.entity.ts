@@ -32,6 +32,12 @@ export class RecurringAvailability {
   @Column({ name: 'end_time' })
   endTime!: string;
 
+  @Column({ type: 'int', default: 1 })
+  capacity!: number;
+
+  @Column({ type: 'varchar', default: 'recurring' })
+  type!: string; // 'recurring'
+
   @ManyToOne(() => DoctorProfile, (doctor) => doctor.recurringAvailabilities, {
     onDelete: 'CASCADE',
   })

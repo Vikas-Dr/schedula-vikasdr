@@ -2,7 +2,7 @@
   "info": {
     "_postman_id": "doctor-availability-vscode-collection",
     "name": "Schedula - Doctor Availability API (VS Code Collection)",
-    "description": "Complete Postman Collection for VS Code Postman Extension & Postman Desktop. Includes registration, login, token auto-saving, recurring slots, custom date overrides, and edge case testing.",
+    "description": "Complete Postman Collection for VS Code Postman Extension & Postman Desktop. Features capacity, type (recurring vs stream), token auto-saving, recurring slots, custom date overrides, and edge case testing.",
     "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
   },
   "variable": [
@@ -136,7 +136,7 @@
       "name": "1. Recurring Weekly Availability",
       "item": [
         {
-          "name": "1.1 Create Recurring Availability (Monday Window 1)",
+          "name": "1.1 Create Recurring Availability (Monday - Capacity: 5, Type: recurring)",
           "event": [
             {
               "listen": "test",
@@ -163,19 +163,19 @@
             ],
             "body": {
               "mode": "raw",
-              "raw": "{\n  \"dayOfWeek\": \"Monday\",\n  \"startTime\": \"10:00 AM\",\n  \"endTime\": \"1:00 PM\"\n}"
+              "raw": "{\n  \"dayOfWeek\": \"Monday\",\n  \"startTime\": \"10:00 AM\",\n  \"endTime\": \"1:00 PM\",\n  \"capacity\": 5,\n  \"type\": \"recurring\"\n}"
             },
             "url": {
               "raw": "{{baseUrl}}/doctor/availability",
               "host": ["{{baseUrl}}"],
               "path": ["doctor", "availability"]
             },
-            "description": "Create weekly recurring availability for Monday (10:00 AM - 1:00 PM)."
+            "description": "Create weekly recurring availability for Monday with capacity (5 patients) and type='recurring'."
           },
           "response": []
         },
         {
-          "name": "1.2 Create Recurring Availability (Monday Window 2 - Multiple Slots)",
+          "name": "1.2 Create Recurring Availability (Monday Window 2 - Capacity: 3)",
           "request": {
             "method": "POST",
             "header": [
@@ -190,14 +190,14 @@
             ],
             "body": {
               "mode": "raw",
-              "raw": "{\n  \"dayOfWeek\": \"Monday\",\n  \"startTime\": \"2:00 PM\",\n  \"endTime\": \"5:00 PM\"\n}"
+              "raw": "{\n  \"dayOfWeek\": \"Monday\",\n  \"startTime\": \"2:00 PM\",\n  \"endTime\": \"5:00 PM\",\n  \"capacity\": 3,\n  \"type\": \"recurring\"\n}"
             },
             "url": {
               "raw": "{{baseUrl}}/doctor/availability",
               "host": ["{{baseUrl}}"],
               "path": ["doctor", "availability"]
             },
-            "description": "Demonstrates multiple non-overlapping time windows on the same day."
+            "description": "Demonstrates multiple non-overlapping recurring time windows on the same day."
           },
           "response": []
         },
@@ -217,7 +217,7 @@
             ],
             "body": {
               "mode": "raw",
-              "raw": "{\n  \"dayOfWeek\": \"Tuesday\",\n  \"startTime\": \"14:00\",\n  \"endTime\": \"17:00\"\n}"
+              "raw": "{\n  \"dayOfWeek\": \"Tuesday\",\n  \"startTime\": \"14:00\",\n  \"endTime\": \"17:00\",\n  \"capacity\": 4,\n  \"type\": \"recurring\"\n}"
             },
             "url": {
               "raw": "{{baseUrl}}/doctor/availability",
@@ -229,7 +229,7 @@
           "response": []
         },
         {
-          "name": "1.4 Get Recurring Availability",
+          "name": "1.4 Get Recurring Availability (Displays capacity & type)",
           "request": {
             "method": "GET",
             "header": [
@@ -243,7 +243,7 @@
               "host": ["{{baseUrl}}"],
               "path": ["doctor", "availability"]
             },
-            "description": "Retrieve all recurring weekly availability slots for the doctor."
+            "description": "Retrieve all recurring weekly availability slots for the doctor showing capacity and type."
           },
           "response": []
         },
@@ -263,14 +263,14 @@
             ],
             "body": {
               "mode": "raw",
-              "raw": "{\n  \"startTime\": \"09:00 AM\",\n  \"endTime\": \"12:00 PM\"\n}"
+              "raw": "{\n  \"startTime\": \"09:00 AM\",\n  \"endTime\": \"12:00 PM\",\n  \"capacity\": 6,\n  \"type\": \"recurring\"\n}"
             },
             "url": {
               "raw": "{{baseUrl}}/doctor/availability/{{recurringSlotId}}",
               "host": ["{{baseUrl}}"],
               "path": ["doctor", "availability", "{{recurringSlotId}}"]
             },
-            "description": "Update recurring availability slot by ID."
+            "description": "Update recurring availability slot time, capacity, and type by ID."
           },
           "response": []
         },
@@ -296,10 +296,10 @@
       ]
     },
     {
-      "name": "2. Custom Date Override",
+      "name": "2. Custom Date Override (Stream / Non-Recurring)",
       "item": [
         {
-          "name": "2.1 Create Custom Date Override (2026-06-15)",
+          "name": "2.1 Create Custom Date Override (2026-06-15 - Capacity: 2, Type: stream)",
           "event": [
             {
               "listen": "test",
@@ -326,19 +326,19 @@
             ],
             "body": {
               "mode": "raw",
-              "raw": "{\n  \"date\": \"2026-06-15\",\n  \"startTime\": \"2:00 PM\",\n  \"endTime\": \"3:00 PM\",\n  \"isAvailable\": true\n}"
+              "raw": "{\n  \"date\": \"2026-06-15\",\n  \"startTime\": \"2:00 PM\",\n  \"endTime\": \"3:00 PM\",\n  \"isAvailable\": true,\n  \"capacity\": 2,\n  \"type\": \"stream\"\n}"
             },
             "url": {
               "raw": "{{baseUrl}}/doctor/availability/override",
               "host": ["{{baseUrl}}"],
               "path": ["doctor", "availability", "override"]
             },
-            "description": "Override recurring availability for a specific date (2026-06-15)."
+            "description": "Override recurring availability for a specific date (2026-06-15) with capacity (2 patients) and type='stream'."
           },
           "response": []
         },
         {
-          "name": "2.2 Get Custom Overrides",
+          "name": "2.2 Get Custom Overrides (Displays capacity & type: stream)",
           "request": {
             "method": "GET",
             "header": [
@@ -352,7 +352,7 @@
               "host": ["{{baseUrl}}"],
               "path": ["doctor", "availability", "override"]
             },
-            "description": "List all custom date overrides for the doctor."
+            "description": "List all custom stream overrides for the doctor showing capacity and type."
           },
           "response": []
         },
@@ -378,10 +378,10 @@
       ]
     },
     {
-      "name": "3. Effective Date Availability Query",
+      "name": "3. Effective Date Availability Query (Shows recurring vs stream)",
       "item": [
         {
-          "name": "3.1 Get Availability for Date (Custom Override Active - 2026-06-15)",
+          "name": "3.1 Get Availability for Date (Stream Override Active - Shows type: stream, isRecurring: false)",
           "request": {
             "method": "GET",
             "header": [
@@ -402,12 +402,12 @@
                 }
               ]
             },
-            "description": "Queries availability for 2026-06-15. Returns custom override slots (isOverride: true)."
+            "description": "Queries availability for 2026-06-15. Returns custom override slots showing type='stream', capacity, and isRecurring=false."
           },
           "response": []
         },
         {
-          "name": "3.2 Get Availability for Date (Fallback to Recurring - 2026-06-22)",
+          "name": "3.2 Get Availability for Date (Fallback to Recurring - Shows type: recurring, isRecurring: true)",
           "request": {
             "method": "GET",
             "header": [
@@ -428,7 +428,7 @@
                 }
               ]
             },
-            "description": "Queries availability for 2026-06-22 (Monday). Returns recurring weekly Monday slots (isOverride: false)."
+            "description": "Queries availability for 2026-06-22 (Monday). Returns recurring weekly Monday slots showing type='recurring', capacity, and isRecurring=true."
           },
           "response": []
         }
@@ -453,7 +453,7 @@
             ],
             "body": {
               "mode": "raw",
-              "raw": "{\n  \"dayOfWeek\": \"Monday\",\n  \"startTime\": \"11:00 AM\",\n  \"endTime\": \"1:00 PM\"\n}"
+              "raw": "{\n  \"dayOfWeek\": \"Monday\",\n  \"startTime\": \"11:00 AM\",\n  \"endTime\": \"1:00 PM\",\n  \"capacity\": 5\n}"
             },
             "url": {
               "raw": "{{baseUrl}}/doctor/availability",

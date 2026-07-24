@@ -178,7 +178,7 @@ describe('DoctorsService', () => {
   });
 
   describe('Recurring Availability', () => {
-    it('should create recurring availability successfully', async () => {
+    it('should create recurring availability with capacity and type successfully', async () => {
       userRepo.findOne.mockResolvedValue({
         ...mockUser,
         doctorProfile: mockDoctorProfile,
@@ -189,11 +189,15 @@ describe('DoctorsService', () => {
         dayOfWeek: 'Monday',
         startTime: '10:00 AM',
         endTime: '1:00 PM',
+        capacity: 5,
+        type: 'recurring',
       });
 
       expect(result.dayOfWeek).toBe('Monday');
       expect(result.startTime).toBe('10:00');
       expect(result.endTime).toBe('13:00');
+      expect(result.capacity).toBe(5);
+      expect(result.type).toBe('recurring');
     });
 
     it('should throw BadRequestException on invalid time range (e.g. 3 PM to 1 PM)', async () => {
@@ -244,6 +248,8 @@ describe('DoctorsService', () => {
         dayOfWeek: 'Monday',
         startTime: '10:00',
         endTime: '12:00',
+        capacity: 1,
+        type: 'recurring',
         doctor: mockDoctorProfile,
       });
       recurringRepo.find.mockResolvedValue([]);
@@ -251,10 +257,11 @@ describe('DoctorsService', () => {
       const result = await service.updateRecurringAvailability(
         'doc-uuid-1',
         'slot-1',
-        { startTime: '09:00' },
+        { startTime: '09:00', capacity: 6 },
       );
 
       expect(result.startTime).toBe('09:00');
+      expect(result.capacity).toBe(6);
     });
 
     it('should delete recurring availability slot successfully', async () => {
@@ -275,8 +282,8 @@ describe('DoctorsService', () => {
     });
   });
 
-  describe('Custom Availability (Override)', () => {
-    it('should create custom availability override successfully', async () => {
+  describe('Custom Availability (Override / Stream)', () => {
+    it('should create custom availability override with capacity and stream type', async () => {
       userRepo.findOne.mockResolvedValue({
         ...mockUser,
         doctorProfile: mockDoctorProfile,
@@ -287,11 +294,15 @@ describe('DoctorsService', () => {
         date: '2026-06-15',
         startTime: '14:00',
         endTime: '15:00',
+        capacity: 2,
+        type: 'stream',
       });
 
       expect(result.date).toBe('2026-06-15');
       expect(result.startTime).toBe('14:00');
       expect(result.endTime).toBe('15:00');
+      expect(result.capacity).toBe(2);
+      expect(result.type).toBe('stream');
     });
 
     it('should throw BadRequestException on invalid date format', async () => {
@@ -309,7 +320,7 @@ describe('DoctorsService', () => {
       ).rejects.toThrow(BadRequestException);
     });
 
-    it('should return custom override slots when custom override exists for date', async () => {
+    it('should return custom stream override slots when custom override exists for date', async () => {
       userRepo.findOne.mockResolvedValue({
         ...mockUser,
         doctorProfile: mockDoctorProfile,
@@ -322,6 +333,8 @@ describe('DoctorsService', () => {
           startTime: '14:00',
           endTime: '15:00',
           isAvailable: true,
+          capacity: 2,
+          type: 'stream',
         },
       ]);
 
@@ -335,9 +348,12 @@ describe('DoctorsService', () => {
       expect(result.dayOfWeek).toBe('Monday');
       expect(result.slots.length).toBe(1);
       expect(result.slots[0].startTime).toBe('14:00');
+      expect(result.slots[0].capacity).toBe(2);
+      expect(result.slots[0].type).toBe('stream');
+      expect(result.slots[0].isRecurring).toBe(false);
     });
 
-    it('should fall back to recurring weekly slots when no custom override exists for date', async () => {
+    it('should fall back to recurring weekly slots showing type=recurring and isRecurring=true', async () => {
       userRepo.findOne.mockResolvedValue({
         ...mockUser,
         doctorProfile: mockDoctorProfile,
@@ -349,6 +365,8 @@ describe('DoctorsService', () => {
           dayOfWeek: 'Monday',
           startTime: '10:00',
           endTime: '13:00',
+          capacity: 5,
+          type: 'recurring',
         },
       ]);
 
@@ -362,6 +380,9 @@ describe('DoctorsService', () => {
       expect(result.dayOfWeek).toBe('Monday');
       expect(result.slots.length).toBe(1);
       expect(result.slots[0].startTime).toBe('10:00');
+      expect(result.slots[0].capacity).toBe(5);
+      expect(result.slots[0].type).toBe('recurring');
+      expect(result.slots[0].isRecurring).toBe(true);
     });
   });
 });

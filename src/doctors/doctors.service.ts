@@ -150,6 +150,8 @@ export class DoctorsService {
       dayOfWeek,
       startTime,
       endTime,
+      capacity: dto.capacity ?? 1,
+      type: dto.type ?? 'recurring',
       doctor: doctorProfile,
     });
 
@@ -223,6 +225,8 @@ export class DoctorsService {
     slot.dayOfWeek = targetDay;
     slot.startTime = targetStart;
     slot.endTime = targetEnd;
+    if (dto.capacity !== undefined) slot.capacity = dto.capacity;
+    if (dto.type !== undefined) slot.type = dto.type;
 
     return this.recurringRepository.save(slot);
   }
@@ -273,6 +277,8 @@ export class DoctorsService {
       startTime,
       endTime,
       isAvailable,
+      capacity: dto.capacity ?? 1,
+      type: dto.type ?? 'stream',
       doctor: doctorProfile,
     });
 
@@ -344,6 +350,9 @@ export class DoctorsService {
           startTime: c.startTime,
           endTime: c.endTime,
           isAvailable: c.isAvailable,
+          capacity: c.capacity ?? 1,
+          type: c.type ?? 'stream',
+          isRecurring: false,
         })),
       };
     }
@@ -364,6 +373,9 @@ export class DoctorsService {
         startTime: r.startTime,
         endTime: r.endTime,
         isAvailable: true,
+        capacity: r.capacity ?? 1,
+        type: r.type ?? 'recurring',
+        isRecurring: true,
       })),
     };
   }

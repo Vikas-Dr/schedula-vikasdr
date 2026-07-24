@@ -41,7 +41,7 @@ Authorization: Bearer {{doctorToken}}
 
 ###
 
-### 1.1 Create Recurring Availability (Monday 10:00 AM - 1:00 PM)
+### 1.1 Create Recurring Availability (Monday 10:00 AM - 1:00 PM, Capacity: 5, Type: recurring)
 POST {{baseUrl}}/doctor/availability
 Content-Type: application/json
 Authorization: Bearer {{doctorToken}}
@@ -49,12 +49,14 @@ Authorization: Bearer {{doctorToken}}
 {
   "dayOfWeek": "Monday",
   "startTime": "10:00 AM",
-  "endTime": "1:00 PM"
+  "endTime": "1:00 PM",
+  "capacity": 5,
+  "type": "recurring"
 }
 
 ###
 
-### 1.2 Create Recurring Availability (Monday 2:00 PM - 5:00 PM - 2nd Window)
+### 1.2 Create Recurring Availability (Monday 2:00 PM - 5:00 PM - 2nd Window, Capacity: 3)
 POST {{baseUrl}}/doctor/availability
 Content-Type: application/json
 Authorization: Bearer {{doctorToken}}
@@ -62,12 +64,14 @@ Authorization: Bearer {{doctorToken}}
 {
   "dayOfWeek": "Monday",
   "startTime": "2:00 PM",
-  "endTime": "5:00 PM"
+  "endTime": "5:00 PM",
+  "capacity": 3,
+  "type": "recurring"
 }
 
 ###
 
-### 1.3 Create Recurring Availability (Tuesday 2:00 PM - 5:00 PM)
+### 1.3 Create Recurring Availability (Tuesday 2:00 PM - 5:00 PM, Capacity: 4)
 POST {{baseUrl}}/doctor/availability
 Content-Type: application/json
 Authorization: Bearer {{doctorToken}}
@@ -75,12 +79,14 @@ Authorization: Bearer {{doctorToken}}
 {
   "dayOfWeek": "Tuesday",
   "startTime": "14:00",
-  "endTime": "17:00"
+  "endTime": "17:00",
+  "capacity": 4,
+  "type": "recurring"
 }
 
 ###
 
-### 1.4 Get Recurring Availability
+### 1.4 Get Recurring Availability (Shows capacity and type: recurring)
 GET {{baseUrl}}/doctor/availability
 Authorization: Bearer {{doctorToken}}
 
@@ -93,7 +99,9 @@ Authorization: Bearer {{doctorToken}}
 
 {
   "startTime": "09:00 AM",
-  "endTime": "12:00 PM"
+  "endTime": "12:00 PM",
+  "capacity": 6,
+  "type": "recurring"
 }
 
 ###
@@ -104,7 +112,7 @@ Authorization: Bearer {{doctorToken}}
 
 ###
 
-### 2.1 Create Custom Date Override (2026-06-15 -> 2:00 PM - 3:00 PM)
+### 2.1 Create Custom Date Override (2026-06-15 -> 2:00 PM - 3:00 PM, Capacity: 2, Type: stream)
 POST {{baseUrl}}/doctor/availability/override
 Content-Type: application/json
 Authorization: Bearer {{doctorToken}}
@@ -113,12 +121,14 @@ Authorization: Bearer {{doctorToken}}
   "date": "2026-06-15",
   "startTime": "2:00 PM",
   "endTime": "3:00 PM",
-  "isAvailable": true
+  "isAvailable": true,
+  "capacity": 2,
+  "type": "stream"
 }
 
 ###
 
-### 2.2 Get Custom Overrides
+### 2.2 Get Custom Overrides (Shows capacity and type: stream)
 GET {{baseUrl}}/doctor/availability/override
 Authorization: Bearer {{doctorToken}}
 
@@ -130,13 +140,13 @@ Authorization: Bearer {{doctorToken}}
 
 ###
 
-### 3.1 Get Availability for Date (Custom Override Active - 2026-06-15)
+### 3.1 Get Availability for Date (Stream Override Active - Shows type: stream, isRecurring: false)
 GET {{baseUrl}}/doctor/availability/date?date=2026-06-15
 Authorization: Bearer {{doctorToken}}
 
 ###
 
-### 3.2 Get Availability for Date (Fallback to Recurring - 2026-06-22)
+### 3.2 Get Availability for Date (Fallback to Recurring - Shows type: recurring, isRecurring: true)
 GET {{baseUrl}}/doctor/availability/date?date=2026-06-22
 Authorization: Bearer {{doctorToken}}
 
@@ -150,7 +160,8 @@ Authorization: Bearer {{doctorToken}}
 {
   "dayOfWeek": "Monday",
   "startTime": "11:00 AM",
-  "endTime": "1:00 PM"
+  "endTime": "1:00 PM",
+  "capacity": 5
 }
 
 ###

@@ -25,6 +25,12 @@ export class CustomAvailability {
   @Column({ name: 'is_available', default: true })
   isAvailable!: boolean;
 
+  @Column({ type: 'int', default: 1 })
+  capacity!: number;
+
+  @Column({ type: 'varchar', default: 'stream' })
+  type!: string; // 'stream' (or 'non-recurring')
+
   @ManyToOne(() => DoctorProfile, (doctor) => doctor.customAvailabilities, {
     onDelete: 'CASCADE',
   })
