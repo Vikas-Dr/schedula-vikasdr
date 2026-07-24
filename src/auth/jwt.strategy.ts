@@ -12,7 +12,9 @@ export interface JwtPayload {
 @Injectable()
 export class JwtStrategy extends PassportStrategy(Strategy) {
   constructor(private readonly usersService: UsersService) {
+    // eslint-disable-next-line @typescript-eslint/no-unsafe-call
     super({
+      // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment, @typescript-eslint/no-unsafe-call, @typescript-eslint/no-unsafe-member-access
       jwtFromRequest: ExtractJwt.fromAuthHeaderAsBearerToken(),
       ignoreExpiration: false,
       secretOrKey: process.env.JWT_SECRET ?? 'change-this-secret',

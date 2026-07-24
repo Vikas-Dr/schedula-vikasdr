@@ -9,26 +9,34 @@ import {
 } from 'class-validator';
 
 export class RegisterDto {
+  @Transform(({ value }: { value: unknown }) =>
+    typeof value === 'string' ? value.trim().toLowerCase() : value,
+  )
   @IsEmail()
-  email: string;
+  email!: string;
 
   @IsString()
   @MinLength(6)
-  password: string;
+  password!: string;
 
   @IsString()
   @IsNotEmpty()
-  name: string;
+  name!: string;
 
+  @Transform(({ value }: { value: unknown }) =>
+    typeof value === 'string' || typeof value === 'number'
+      ? String(value).trim()
+      : value,
+  )
   @IsString()
   @IsNotEmpty()
-  phone: string;
+  phone!: string;
 
-  @Transform(({ value }) =>
-    typeof value === 'string' ? value.toLowerCase() : value,
+  @Transform(({ value }: { value: unknown }) =>
+    typeof value === 'string' ? value.trim().toLowerCase() : value,
   )
   @IsEnum(['doctor', 'patient'])
-  role: 'doctor' | 'patient';
+  role!: 'doctor' | 'patient';
 
   @IsOptional()
   @IsString()
@@ -39,12 +47,13 @@ export class RegisterDto {
   bio?: string;
 
   @IsOptional()
+  @Transform(({ value }: { value: unknown }) =>
+    typeof value === 'string' || typeof value === 'number'
+      ? String(value)
+      : value,
+  )
   @IsString()
   yearsOfExperience?: string;
-
-  @IsOptional()
-  @IsString()
-  fee?: string;
 
   @IsOptional()
   @IsString()
@@ -59,6 +68,11 @@ export class RegisterDto {
   bloodType?: string;
 
   @IsOptional()
+  @Transform(({ value }: { value: unknown }) =>
+    typeof value === 'string' || typeof value === 'number'
+      ? String(value)
+      : value,
+  )
   @IsString()
   emergencyContact?: string;
 }

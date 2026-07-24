@@ -1,0 +1,547 @@
+{
+  "info": {
+    "_postman_id": "doctor-availability-vscode-collection",
+    "name": "Schedula - Doctor Availability API (VS Code Collection)",
+    "description": "Complete Postman Collection for VS Code Postman Extension & Postman Desktop. Includes registration, login, token auto-saving, recurring slots, custom date overrides, and edge case testing.",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "variable": [
+    {
+      "key": "baseUrl",
+      "value": "http://localhost:3000",
+      "type": "string"
+    },
+    {
+      "key": "doctorToken",
+      "value": "YOUR_DOCTOR_JWT_TOKEN",
+      "type": "string"
+    },
+    {
+      "key": "recurringSlotId",
+      "value": "",
+      "type": "string"
+    },
+    {
+      "key": "overrideSlotId",
+      "value": "",
+      "type": "string"
+    }
+  ],
+  "item": [
+    {
+      "name": "0. Authentication Helpers",
+      "item": [
+        {
+          "name": "0.1 Register Doctor (Create Account)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "var jsonData = pm.response.json();",
+                  "if (jsonData.access_token) { pm.collectionVariables.set('doctorToken', jsonData.access_token); }",
+                  "if (jsonData.token) { pm.collectionVariables.set('doctorToken', jsonData.token); }"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"email\": \"doctor@example.com\",\n  \"password\": \"password123\",\n  \"name\": \"Dr. John Smith\",\n  \"phone\": \"1234567890\",\n  \"role\": \"doctor\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/auth/register",
+              "host": ["{{baseUrl}}"],
+              "path": ["auth", "register"]
+            },
+            "description": "Register a new doctor account with required name, phone, and role fields."
+          },
+          "response": []
+        },
+        {
+          "name": "0.2 Login Doctor (Auto-saves Token)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "var jsonData = pm.response.json();",
+                  "if (jsonData.access_token) { pm.collectionVariables.set('doctorToken', jsonData.access_token); }",
+                  "if (jsonData.token) { pm.collectionVariables.set('doctorToken', jsonData.token); }"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"email\": \"doctor@example.com\",\n  \"password\": \"password123\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/auth/login",
+              "host": ["{{baseUrl}}"],
+              "path": ["auth", "login"]
+            },
+            "description": "Log in doctor to automatically save doctorToken into collection variable."
+          },
+          "response": []
+        },
+        {
+          "name": "0.3 Create Doctor Profile (If Not Already Created)",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{doctorToken}}"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"name\": \"Dr. John Smith\",\n  \"specialization\": \"Cardiology\",\n  \"experience\": \"10 years\",\n  \"qualification\": \"MD\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/doctor/profile",
+              "host": ["{{baseUrl}}"],
+              "path": ["doctor", "profile"]
+            },
+            "description": "Ensure doctor profile exists so doctor can set availability."
+          },
+          "response": []
+        }
+      ]
+    },
+    {
+      "name": "1. Recurring Weekly Availability",
+      "item": [
+        {
+          "name": "1.1 Create Recurring Availability (Monday Window 1)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "var jsonData = pm.response.json();",
+                  "if (jsonData.id) { pm.collectionVariables.set('recurringSlotId', jsonData.id); }"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{doctorToken}}"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"dayOfWeek\": \"Monday\",\n  \"startTime\": \"10:00 AM\",\n  \"endTime\": \"1:00 PM\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/doctor/availability",
+              "host": ["{{baseUrl}}"],
+              "path": ["doctor", "availability"]
+            },
+            "description": "Create weekly recurring availability for Monday (10:00 AM - 1:00 PM)."
+          },
+          "response": []
+        },
+        {
+          "name": "1.2 Create Recurring Availability (Monday Window 2 - Multiple Slots)",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{doctorToken}}"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"dayOfWeek\": \"Monday\",\n  \"startTime\": \"2:00 PM\",\n  \"endTime\": \"5:00 PM\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/doctor/availability",
+              "host": ["{{baseUrl}}"],
+              "path": ["doctor", "availability"]
+            },
+            "description": "Demonstrates multiple non-overlapping time windows on the same day."
+          },
+          "response": []
+        },
+        {
+          "name": "1.3 Create Recurring Availability (Tuesday)",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{doctorToken}}"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"dayOfWeek\": \"Tuesday\",\n  \"startTime\": \"14:00\",\n  \"endTime\": \"17:00\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/doctor/availability",
+              "host": ["{{baseUrl}}"],
+              "path": ["doctor", "availability"]
+            },
+            "description": "Create weekly recurring availability for Tuesday (2:00 PM - 5:00 PM)."
+          },
+          "response": []
+        },
+        {
+          "name": "1.4 Get Recurring Availability",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{doctorToken}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/doctor/availability",
+              "host": ["{{baseUrl}}"],
+              "path": ["doctor", "availability"]
+            },
+            "description": "Retrieve all recurring weekly availability slots for the doctor."
+          },
+          "response": []
+        },
+        {
+          "name": "1.5 Update Recurring Availability Slot",
+          "request": {
+            "method": "PATCH",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{doctorToken}}"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"startTime\": \"09:00 AM\",\n  \"endTime\": \"12:00 PM\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/doctor/availability/{{recurringSlotId}}",
+              "host": ["{{baseUrl}}"],
+              "path": ["doctor", "availability", "{{recurringSlotId}}"]
+            },
+            "description": "Update recurring availability slot by ID."
+          },
+          "response": []
+        },
+        {
+          "name": "1.6 Delete Recurring Availability Slot",
+          "request": {
+            "method": "DELETE",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{doctorToken}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/doctor/availability/{{recurringSlotId}}",
+              "host": ["{{baseUrl}}"],
+              "path": ["doctor", "availability", "{{recurringSlotId}}"]
+            },
+            "description": "Delete recurring availability slot by ID."
+          },
+          "response": []
+        }
+      ]
+    },
+    {
+      "name": "2. Custom Date Override",
+      "item": [
+        {
+          "name": "2.1 Create Custom Date Override (2026-06-15)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "var jsonData = pm.response.json();",
+                  "if (jsonData.id) { pm.collectionVariables.set('overrideSlotId', jsonData.id); }"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{doctorToken}}"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"date\": \"2026-06-15\",\n  \"startTime\": \"2:00 PM\",\n  \"endTime\": \"3:00 PM\",\n  \"isAvailable\": true\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/doctor/availability/override",
+              "host": ["{{baseUrl}}"],
+              "path": ["doctor", "availability", "override"]
+            },
+            "description": "Override recurring availability for a specific date (2026-06-15)."
+          },
+          "response": []
+        },
+        {
+          "name": "2.2 Get Custom Overrides",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{doctorToken}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/doctor/availability/override",
+              "host": ["{{baseUrl}}"],
+              "path": ["doctor", "availability", "override"]
+            },
+            "description": "List all custom date overrides for the doctor."
+          },
+          "response": []
+        },
+        {
+          "name": "2.3 Delete Custom Override Slot",
+          "request": {
+            "method": "DELETE",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{doctorToken}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/doctor/availability/override/{{overrideSlotId}}",
+              "host": ["{{baseUrl}}"],
+              "path": ["doctor", "availability", "override", "{{overrideSlotId}}"]
+            },
+            "description": "Delete custom date override by ID."
+          },
+          "response": []
+        }
+      ]
+    },
+    {
+      "name": "3. Effective Date Availability Query",
+      "item": [
+        {
+          "name": "3.1 Get Availability for Date (Custom Override Active - 2026-06-15)",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{doctorToken}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/doctor/availability/date?date=2026-06-15",
+              "host": ["{{baseUrl}}"],
+              "path": ["doctor", "availability", "date"],
+              "query": [
+                {
+                  "key": "date",
+                  "value": "2026-06-15",
+                  "description": "Specific date to check availability"
+                }
+              ]
+            },
+            "description": "Queries availability for 2026-06-15. Returns custom override slots (isOverride: true)."
+          },
+          "response": []
+        },
+        {
+          "name": "3.2 Get Availability for Date (Fallback to Recurring - 2026-06-22)",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{doctorToken}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/doctor/availability/date?date=2026-06-22",
+              "host": ["{{baseUrl}}"],
+              "path": ["doctor", "availability", "date"],
+              "query": [
+                {
+                  "key": "date",
+                  "value": "2026-06-22",
+                  "description": "Another Monday with no custom override"
+                }
+              ]
+            },
+            "description": "Queries availability for 2026-06-22 (Monday). Returns recurring weekly Monday slots (isOverride: false)."
+          },
+          "response": []
+        }
+      ]
+    },
+    {
+      "name": "4. Validations & Edge Cases (Conflict Testing)",
+      "item": [
+        {
+          "name": "4.1 Overlapping Time Slot (Should Fail 400)",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{doctorToken}}"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"dayOfWeek\": \"Monday\",\n  \"startTime\": \"11:00 AM\",\n  \"endTime\": \"1:00 PM\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/doctor/availability",
+              "host": ["{{baseUrl}}"],
+              "path": ["doctor", "availability"]
+            },
+            "description": "Attempts to add 11:00 AM - 1:00 PM when 10:00 AM - 1:00 PM already exists. Should fail with 400 Bad Request."
+          },
+          "response": []
+        },
+        {
+          "name": "4.2 Invalid Time Range (3 PM - 1 PM) (Should Fail 400)",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{doctorToken}}"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"dayOfWeek\": \"Monday\",\n  \"startTime\": \"3:00 PM\",\n  \"endTime\": \"1:00 PM\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/doctor/availability",
+              "host": ["{{baseUrl}}"],
+              "path": ["doctor", "availability"]
+            },
+            "description": "Attempts to pass startTime after endTime. Should fail with 400 Bad Request."
+          },
+          "response": []
+        },
+        {
+          "name": "4.3 Invalid Date Format (Should Fail 400)",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{doctorToken}}"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"date\": \"invalid-date-format\",\n  \"startTime\": \"2:00 PM\",\n  \"endTime\": \"3:00 PM\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/doctor/availability/override",
+              "host": ["{{baseUrl}}"],
+              "path": ["doctor", "availability", "override"]
+            },
+            "description": "Attempts to pass invalid date string. Should fail with 400 Bad Request."
+          },
+          "response": []
+        },
+        {
+          "name": "4.4 Unauthorized Access (No Token) (Should Fail 401)",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"dayOfWeek\": \"Monday\",\n  \"startTime\": \"10:00 AM\",\n  \"endTime\": \"1:00 PM\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/doctor/availability",
+              "host": ["{{baseUrl}}"],
+              "path": ["doctor", "availability"]
+            },
+            "description": "Access without bearer token should fail with 401 Unauthorized."
+          },
+          "response": []
+        }
+      ]
+    }
+  ]
+}

@@ -37,12 +37,16 @@ export class UsersService {
 
     const savedUser = await this.usersRepository.save(user);
 
-    if (data.role === 'doctor') {
+    if (
+      data.role === 'doctor' &&
+      data.doctorProfile &&
+      Object.keys(data.doctorProfile).length > 0
+    ) {
       const doctorProfile = this.doctorRepository.create({
         specialization: data.doctorProfile?.specialization,
         bio: data.doctorProfile?.bio,
         yearsOfExperience: data.doctorProfile?.yearsOfExperience,
-        fee: data.doctorProfile?.fee,
+        qualification: data.doctorProfile?.qualification,
         isVerified: false,
         user: savedUser,
       });
@@ -50,12 +54,18 @@ export class UsersService {
       savedUser.doctorProfile = doctorProfile;
     }
 
-    if (data.role === 'patient') {
+    if (
+      data.role === 'patient' &&
+      data.patientProfile &&
+      Object.keys(data.patientProfile).length > 0
+    ) {
       const patientProfile = this.patientRepository.create({
         birthday: data.patientProfile?.birthday,
+        age: data.patientProfile?.age,
         gender: data.patientProfile?.gender,
         bloodType: data.patientProfile?.bloodType,
         emergencyContact: data.patientProfile?.emergencyContact,
+        basicHealthInfo: data.patientProfile?.basicHealthInfo,
         user: savedUser,
       });
       await this.patientRepository.save(patientProfile);
@@ -68,6 +78,7 @@ export class UsersService {
   findOneByEmail(email: string) {
     return this.usersRepository.findOne({
       where: { email },
+      select: ['id', 'email', 'password', 'name', 'phone', 'role'],
       relations: ['doctorProfile', 'patientProfile'],
     });
   }
