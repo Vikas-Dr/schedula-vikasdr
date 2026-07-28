@@ -17,18 +17,30 @@ import { Appointment } from './appointments/appointment.entity';
     TypeOrmModule.forRootAsync({
       useFactory: (): TypeOrmModuleOptions => {
         const isTest = process.env.NODE_ENV === 'test';
+        const dbType = (process.env.DB_TYPE as 'postgres' | 'sqlite') ?? 'sqlite';
+
+        if (dbType === 'postgres' && !isTest) {
+          return {
+            type: 'postgres',
+            database: process.env.DB_NAME ?? 'schedula',
+            host: process.env.DB_HOST ?? 'localhost',
+            port: parseInt(process.env.DB_PORT ?? '5432', 10),
+            username: process.env.DB_USER ?? 'postgres',
+            password: process.env.DB_PASS ?? 'postgres',
+            entities: [User, DoctorProfile, PatientProfile, Appointment],
+            migrations: [__dirname + '/migrations/*{.ts,.js}'],
+            synchronize: false,
+            autoLoadEntities: true,
+            logging: false,
+          };
+        }
+
         return {
-          type: isTest ? 'sqlite' : 'postgres',
-          database: isTest ? ':memory:' : (process.env.DB_NAME ?? 'schedula'),
-          host: isTest ? undefined : (process.env.DB_HOST ?? 'localhost'),
-          port: isTest
-            ? undefined
-            : parseInt(process.env.DB_PORT ?? '5432', 10),
-          username: isTest ? undefined : (process.env.DB_USER ?? 'postgres'),
-          password: isTest ? undefined : (process.env.DB_PASS ?? 'postgres'),
+          type: 'sqlite',
+          database: isTest ? ':memory:' : (process.env.DB_NAME ?? 'schedula.sqlite'),
           entities: [User, DoctorProfile, PatientProfile, Appointment],
           migrations: [__dirname + '/migrations/*{.ts,.js}'],
-          synchronize: isTest ? true : false,
+          synchronize: true,
           dropSchema: isTest,
           autoLoadEntities: true,
           logging: false,
