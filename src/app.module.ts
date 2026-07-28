@@ -6,9 +6,11 @@ import { AuthModule } from './auth/auth.module';
 import { UsersModule } from './users/users.module';
 import { DoctorsModule } from './doctors/doctors.module';
 import { PatientsModule } from './patients/patients.module';
+import { AppointmentsModule } from './appointments/appointments.module';
 import { User } from './users/user.entity';
 import { DoctorProfile } from './doctors/doctor.entity';
 import { PatientProfile } from './patients/patient.entity';
+import { Appointment } from './appointments/appointment.entity';
 
 @Module({
   imports: [
@@ -24,7 +26,7 @@ import { PatientProfile } from './patients/patient.entity';
             : parseInt(process.env.DB_PORT ?? '5432', 10),
           username: isTest ? undefined : (process.env.DB_USER ?? 'postgres'),
           password: isTest ? undefined : (process.env.DB_PASS ?? 'postgres'),
-          entities: [User, DoctorProfile, PatientProfile],
+          entities: [User, DoctorProfile, PatientProfile, Appointment],
           migrations: [__dirname + '/migrations/*{.ts,.js}'],
           synchronize: isTest ? true : false,
           dropSchema: isTest,
@@ -37,6 +39,7 @@ import { PatientProfile } from './patients/patient.entity';
     AuthModule,
     DoctorsModule,
     PatientsModule,
+    AppointmentsModule,
   ],
   controllers: [AppController],
   providers: [AppService],

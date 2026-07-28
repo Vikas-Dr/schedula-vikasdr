@@ -188,3 +188,50 @@ export function getDayOfWeekFromDate(dateStr: string): string {
 
   return dayNames[dateObj.getUTCDay()];
 }
+
+/**
+ * Generates discrete stream slots from start time to end time with slot duration and optional buffer.
+ */
+export function generateStreamSlots(
+  startTimeStr: string,
+  endTimeStr: string,
+  slotDurationMinutes: number,
+  bufferTimeMinutes: number = 0,
+): { startTime: string; endTime: string }[] {
+  if (slotDurationMinutes <= 0) {
+    throw new BadRequestException(
+      `Invalid slot duration: ${slotDurationMinutes}. Slot duration must be greater than 0.`,
+    );
+  }
+  if (bufferTimeMinutes < 0) {
+    throw new BadRequestException(
+      `Invalid buffer time: ${bufferTimeMinutes}. Buffer time cannot be negative.`,
+    );
+  }
+
+  const { startMinutes, endMinutes } = validateTimeRange(
+    startTimeStr,
+    endTimeStr,
+  );
+  const totalWindow = endMinutes - startMinutes;
+
+  if (slotDurationMinutes > totalWindow) {
+    throw new BadRequestException(
+      `Invalid slot duration: ${slotDurationMinutes} mins exceeds total window duration of ${totalWindow} mins.`,
+    );
+  }
+
+  const slots: { startTime: string; endTime: string }[] = [];
+  let currentStart = startMinutes;
+
+  while (currentStart + slotDurationMinutes <= endMinutes) {
+    const currentEnd = currentStart + slotDurationMinutes;
+    slots.push({
+      startTime: formatMinutesToHHMM(currentStart),
+      endTime: formatMinutesToHHMM(currentEnd),
+    });
+    currentStart = currentEnd + bufferTimeMinutes;
+  }
+
+  return slots;
+}
