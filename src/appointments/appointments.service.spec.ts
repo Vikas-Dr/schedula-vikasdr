@@ -184,6 +184,56 @@ describe('AppointmentsService', () => {
     });
   });
 
+  describe('Cancellation and Rescheduling', () => {
+    it('Patient should cancel their own appointment successfully', async () => {
+      appointmentRepo.findOne.mockResolvedValue({
+        id: 'app-1',
+        status: 'CONFIRMED',
+        patient: { user: { id: 'patient-user-1' } },
+        doctor: { user: { id: 'doc-user-1' } },
+      });
+
+      const res = await service.cancelAppointment('patient-user-1', 'patient', 'app-1');
+      expect(res.status).toBe('CANCELLED_BY_PATIENT');
+    });
+
+    it('Doctor should cancel appointment scheduled with them successfully', async () => {
+      appointmentRepo.findOne.mockResolvedValue({
+        id: 'app-1',
+        status: 'CONFIRMED',
+        patient: { user: { id: 'patient-user-1' } },
+        doctor: { user: { id: 'doc-user-1' } },
+      });
+
+      const res = await service.cancelAppointment('doc-user-1', 'doctor', 'app-1');
+      expect(res.status).toBe('CANCELLED_BY_DOCTOR');
+    });
+
+    it('Patient should reschedule appointment to a new available date/time', async () => {
+      const futureDate = '2030-02-01';
+      appointmentRepo.findOne.mockResolvedValue({
+        id: 'app-1',
+        status: 'CONFIRMED',
+        patient: { id: 'patient-uuid-1', user: { id: 'patient-user-1' } },
+        doctor: mockDoctor,
+      });
+
+      customRepo.find.mockResolvedValue([
+        { id: 'c1', startTime: '14:00', endTime: '15:00', isAvailable: true, schedulingType: 'STREAM' },
+      ]);
+
+      const res = await service.rescheduleAppointment('patient-user-1', 'app-1', {
+        newDate: futureDate,
+        newStartTime: '14:00',
+        newEndTime: '14:15',
+        schedulingType: 'STREAM',
+      });
+
+      expect(res.message).toBe('Appointment rescheduled successfully');
+      expect(res.date).toBe(futureDate);
+    });
+  });
+
   describe('Edge Cases', () => {
     it('should throw BadRequestException when booking past date', async () => {
       await expect(

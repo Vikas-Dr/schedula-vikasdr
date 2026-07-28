@@ -12,6 +12,7 @@ import { PatientProfile } from '../patients/patient.entity';
 import { RecurringAvailability } from '../doctors/entities/recurring-availability.entity';
 import { CustomAvailability } from '../doctors/entities/custom-availability.entity';
 import { BookAppointmentDto } from './dto/book-appointment.dto';
+import { RescheduleAppointmentDto } from './dto/reschedule-appointment.dto';
 import {
   getDayOfWeekFromDate,
   isOverlapping,
@@ -343,6 +344,245 @@ export class AppointmentsService {
       relations: ['patient', 'patient.user'],
       order: { date: 'DESC', startTime: 'ASC' },
     });
+  }
+
+  async cancelAppointment(userId: string, userRole: string, appointmentId: string) {
+    const appointment = await this.appointmentRepository.findOne({
+      where: { id: appointmentId },
+      relations: ['patient', 'patient.user', 'doctor', 'doctor.user'],
+    });
+
+    if (!appointment) {
+      throw new NotFoundException(`Appointment with ID "${appointmentId}" not found.`);
+    }
+
+    if (appointment.status.startsWith('CANCELLED')) {
+      throw new BadRequestException(`Appointment is already cancelled.`);
+    }
+
+    if (userRole === 'patient') {
+      if (appointment.patient.user.id !== userId) {
+        throw new BadRequestException('You can only cancel your own appointments.');
+      }
+      appointment.status = 'CANCELLED_BY_PATIENT';
+    } else if (userRole === 'doctor') {
+      if (appointment.doctor.user.id !== userId) {
+        throw new BadRequestException('You can only cancel appointments scheduled with you.');
+      }
+      appointment.status = 'CANCELLED_BY_DOCTOR';
+    } else {
+      appointment.status = 'CANCELLED';
+    }
+
+    const saved = await this.appointmentRepository.save(appointment);
+
+    return {
+      message: 'Appointment cancelled successfully',
+      id: saved.id,
+      status: saved.status,
+      date: saved.date,
+      startTime: saved.startTime,
+      endTime: saved.endTime,
+      schedulingType: saved.schedulingType,
+    };
+  }
+
+  async rescheduleAppointment(
+    userId: string,
+    appointmentId: string,
+    dto: RescheduleAppointmentDto,
+  ) {
+    const patientProfile = await this.getPatientProfileByUserId(userId);
+    const appointment = await this.appointmentRepository.findOne({
+      where: { id: appointmentId, patient: { id: patientProfile.id } },
+      relations: ['doctor', 'doctor.user', 'patient', 'patient.user'],
+    });
+
+    if (!appointment) {
+      throw new NotFoundException(
+        `Appointment with ID "${appointmentId}" not found or does not belong to you.`,
+      );
+    }
+
+    if (appointment.status.startsWith('CANCELLED')) {
+      throw new BadRequestException(
+        'Cannot reschedule a cancelled appointment.',
+      );
+    }
+
+    const newDate = validateAndFormatDate(dto.newDate);
+    const today = new Date().toISOString().split('T')[0];
+    if (newDate < today) {
+      throw new BadRequestException(
+        `Cannot reschedule appointment to a past date: ${newDate}`,
+      );
+    }
+
+    const doctorProfile = appointment.doctor;
+    const dayOfWeek = getDayOfWeekFromDate(newDate);
+
+    // Fetch active availabilities on new date
+    const customOverrides = await this.customRepository.find({
+      where: { doctor: { id: doctorProfile.id }, date: newDate, isAvailable: true },
+    });
+
+    let activeAvailabilities: {
+      id: string;
+      startTime: string;
+      endTime: string;
+      schedulingType: 'STREAM' | 'WAVE';
+      maxCapacity: number;
+    }[] = [];
+
+    if (customOverrides.length > 0) {
+      activeAvailabilities = customOverrides.map((c) => ({
+        id: c.id,
+        startTime: c.startTime,
+        endTime: c.endTime,
+        schedulingType: c.schedulingType ?? doctorProfile.schedulingType ?? 'STREAM',
+        maxCapacity: c.maxCapacity ?? c.capacity ?? 1,
+      }));
+    } else {
+      const recurring = await this.recurringRepository.find({
+        where: { doctor: { id: doctorProfile.id }, dayOfWeek },
+      });
+      activeAvailabilities = recurring.map((r) => ({
+        id: r.id,
+        startTime: r.startTime,
+        endTime: r.endTime,
+        schedulingType: r.schedulingType ?? doctorProfile.schedulingType ?? 'STREAM',
+        maxCapacity: r.maxCapacity ?? r.capacity ?? 1,
+      }));
+    }
+
+    if (activeAvailabilities.length === 0) {
+      throw new BadRequestException(
+        `Doctor is not available on ${newDate} (${dayOfWeek}).`,
+      );
+    }
+
+    // Determine target matching window
+    let matchingWindow = activeAvailabilities[0];
+    if (dto.newAvailabilityId) {
+      const found = activeAvailabilities.find((a) => a.id === dto.newAvailabilityId);
+      if (found) matchingWindow = found;
+    } else if (dto.newStartTime && dto.newEndTime) {
+      const normStart = normalizeTimeString(dto.newStartTime);
+      const normEnd = normalizeTimeString(dto.newEndTime);
+      const found = activeAvailabilities.find((a) =>
+        isOverlapping(a.startTime, a.endTime, normStart, normEnd),
+      );
+      if (found) matchingWindow = found;
+    }
+
+    const effectiveSchedulingType =
+      dto.schedulingType ??
+      matchingWindow.schedulingType ??
+      doctorProfile.schedulingType ??
+      'STREAM';
+
+    if (effectiveSchedulingType === 'STREAM') {
+      const startTime = dto.newStartTime
+        ? normalizeTimeString(dto.newStartTime)
+        : matchingWindow.startTime;
+      const endTime = dto.newEndTime
+        ? normalizeTimeString(dto.newEndTime)
+        : matchingWindow.endTime;
+
+      if (!isOverlapping(matchingWindow.startTime, matchingWindow.endTime, startTime, endTime)) {
+        throw new BadRequestException(
+          `Slot ${startTime} - ${endTime} is outside doctor's available window (${matchingWindow.startTime} - ${matchingWindow.endTime}).`,
+        );
+      }
+
+      // Check if slot is already booked by anyone (excluding this appointment)
+      const existingBooking = await this.appointmentRepository.findOne({
+        where: {
+          doctor: { id: doctorProfile.id },
+          date: newDate,
+          startTime,
+          endTime,
+          status: 'CONFIRMED',
+        },
+      });
+
+      if (existingBooking && existingBooking.id !== appointmentId) {
+        throw new ConflictException(
+          `Slot ${startTime} - ${endTime} on ${newDate} is already booked.`,
+        );
+      }
+
+      appointment.date = newDate;
+      appointment.startTime = startTime;
+      appointment.endTime = endTime;
+      appointment.schedulingType = 'STREAM';
+      appointment.tokenNumber = undefined;
+      appointment.availabilityId = matchingWindow.id;
+      if (dto.reason) appointment.reason = dto.reason;
+
+      const saved = await this.appointmentRepository.save(appointment);
+
+      return {
+        message: 'Appointment rescheduled successfully',
+        id: saved.id,
+        date: saved.date,
+        startTime: saved.startTime,
+        endTime: saved.endTime,
+        appointmentTime: `${saved.startTime} - ${saved.endTime}`,
+        schedulingType: 'STREAM',
+        status: saved.status,
+        reason: saved.reason,
+      };
+    } else {
+      // WAVE Strategy Reschedule
+      const startTime = dto.newStartTime ? normalizeTimeString(dto.newStartTime) : matchingWindow.startTime;
+      const endTime = dto.newEndTime ? normalizeTimeString(dto.newEndTime) : matchingWindow.endTime;
+      const maxCapacity = matchingWindow.maxCapacity;
+
+      // Count existing bookings in this new wave (excluding current appointment)
+      const currentBookings = await this.appointmentRepository.find({
+        where: {
+          doctor: { id: doctorProfile.id },
+          date: newDate,
+          startTime,
+          endTime,
+          status: 'CONFIRMED',
+        },
+      });
+
+      const otherBookings = currentBookings.filter((b) => b.id !== appointmentId);
+      if (otherBookings.length >= maxCapacity) {
+        throw new ConflictException(
+          `Wave is full: Maximum capacity of ${maxCapacity} reached for window ${startTime} - ${endTime}.`,
+        );
+      }
+
+      const tokenNumber = otherBookings.length + 1;
+
+      appointment.date = newDate;
+      appointment.startTime = startTime;
+      appointment.endTime = endTime;
+      appointment.schedulingType = 'WAVE';
+      appointment.tokenNumber = tokenNumber;
+      appointment.availabilityId = matchingWindow.id;
+      if (dto.reason) appointment.reason = dto.reason;
+
+      const saved = await this.appointmentRepository.save(appointment);
+
+      return {
+        message: 'Appointment rescheduled successfully',
+        id: saved.id,
+        date: saved.date,
+        startTime: saved.startTime,
+        endTime: saved.endTime,
+        timeWindow: `${saved.startTime} - ${saved.endTime}`,
+        schedulingType: 'WAVE',
+        tokenNumber: saved.tokenNumber,
+        displayToken: `Token No: ${saved.tokenNumber}`,
+        status: saved.status,
+        reason: saved.reason,
+      };
+    }
   }
 
   private async getPatientProfileByUserId(userId: string): Promise<PatientProfile> {
