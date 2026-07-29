@@ -1,524 +1,606 @@
 {
   "info": {
-    "_postman_id": "7b8c9d0e-1f2a-3b4c-5d6e-7f8a9b0c1d2e",
+    "_postman_id": "8f9a2b3c-4d5e-6f7a-8b9c-0d1e2f3a4b5c",
     "name": "Schedula API",
-    "description": "Complete Postman Collection for Schedula Doctor Scheduling and Appointment Management",
+    "description": "Complete Postman Collection for Schedula Advanced Doctor Scheduling System",
     "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
   },
   "item": [
     {
-      "name": "0. Authentication & Profiles",
-      "item": [
+      "name": "0.1 Register Doctor",
+      "event": [
         {
-          "name": "0.1 Register Doctor",
-          "event": [
-            {
-              "listen": "test",
-              "script": {
-                "exec": [
-                  "pm.test('Status is 201 or 400', function () {",
-                  "    pm.expect([201, 400]).to.include(pm.response.code);",
-                  "});",
-                  "var res = pm.response.json();",
-                  "if (res.access_token) { pm.environment.set('doctorToken', res.access_token); }"
-                ],
-                "type": "text/javascript"
-              }
-            }
-          ],
-          "request": {
-            "method": "POST",
-            "header": [
-              {
-                "key": "Content-Type",
-                "value": "application/json"
-              }
+          "listen": "test",
+          "script": {
+            "exec": [
+              "var res = pm.response.json();",
+              "if (res.access_token) { pm.environment.set('doctorToken', res.access_token); }"
             ],
-            "body": {
-              "mode": "raw",
-              "raw": "{\n  \"email\": \"doctor@example.com\",\n  \"password\": \"password123\",\n  \"name\": \"Dr. Sarah Jenkins\",\n  \"phone\": \"1234567890\",\n  \"role\": \"doctor\"\n}"
-            },
-            "url": "http://localhost:3000/auth/register"
-          }
-        },
-        {
-          "name": "0.2 Login Doctor",
-          "event": [
-            {
-              "listen": "test",
-              "script": {
-                "exec": [
-                  "pm.test('Status is 200', function () { pm.response.to.have.status(200); });",
-                  "var res = pm.response.json();",
-                  "if (res.access_token) { pm.environment.set('doctorToken', res.access_token); }"
-                ],
-                "type": "text/javascript"
-              }
-            }
-          ],
-          "request": {
-            "method": "POST",
-            "header": [
-              {
-                "key": "Content-Type",
-                "value": "application/json"
-              }
-            ],
-            "body": {
-              "mode": "raw",
-              "raw": "{\n  \"email\": \"doctor@example.com\",\n  \"password\": \"password123\"\n}"
-            },
-            "url": "http://localhost:3000/auth/login"
-          }
-        },
-        {
-          "name": "0.3 Create Doctor Profile (STREAM)",
-          "event": [
-            {
-              "listen": "test",
-              "script": {
-                "exec": [
-                  "pm.test('Status is 200 or 201', function () { pm.expect([200, 201]).to.include(pm.response.code); });",
-                  "var res = pm.response.json();",
-                  "if (res.id) { pm.environment.set('doctorId', res.id); }"
-                ],
-                "type": "text/javascript"
-              }
-            }
-          ],
-          "request": {
-            "method": "POST",
-            "header": [
-              {
-                "key": "Content-Type",
-                "value": "application/json"
-              },
-              {
-                "key": "Authorization",
-                "value": "Bearer {{doctorToken}}"
-              }
-            ],
-            "body": {
-              "mode": "raw",
-              "raw": "{\n  \"specialization\": \"Psychiatry\",\n  \"yearsOfExperience\": \"10 years\",\n  \"qualification\": \"MD, PhD\",\n  \"bio\": \"Specializing in mood disorders\",\n  \"schedulingType\": \"STREAM\"\n}"
-            },
-            "url": "http://localhost:3000/doctor/profile"
-          }
-        },
-        {
-          "name": "0.4 Register Patient",
-          "event": [
-            {
-              "listen": "test",
-              "script": {
-                "exec": [
-                  "pm.test('Status is 201 or 400', function () { pm.expect([201, 400]).to.include(pm.response.code); });",
-                  "var res = pm.response.json();",
-                  "if (res.access_token) { pm.environment.set('patientToken', res.access_token); }"
-                ],
-                "type": "text/javascript"
-              }
-            }
-          ],
-          "request": {
-            "method": "POST",
-            "header": [
-              {
-                "key": "Content-Type",
-                "value": "application/json"
-              }
-            ],
-            "body": {
-              "mode": "raw",
-              "raw": "{\n  \"email\": \"patient@example.com\",\n  \"password\": \"password123\",\n  \"name\": \"John Doe\",\n  \"phone\": \"9876543210\",\n  \"role\": \"patient\"\n}"
-            },
-            "url": "http://localhost:3000/auth/register"
-          }
-        },
-        {
-          "name": "0.5 Login Patient",
-          "event": [
-            {
-              "listen": "test",
-              "script": {
-                "exec": [
-                  "pm.test('Status is 200', function () { pm.response.to.have.status(200); });",
-                  "var res = pm.response.json();",
-                  "if (res.access_token) { pm.environment.set('patientToken', res.access_token); }"
-                ],
-                "type": "text/javascript"
-              }
-            }
-          ],
-          "request": {
-            "method": "POST",
-            "header": [
-              {
-                "key": "Content-Type",
-                "value": "application/json"
-              }
-            ],
-            "body": {
-              "mode": "raw",
-              "raw": "{\n  \"email\": \"patient@example.com\",\n  \"password\": \"password123\"\n}"
-            },
-            "url": "http://localhost:3000/auth/login"
-          }
-        },
-        {
-          "name": "0.6 Create Patient Profile",
-          "event": [
-            {
-              "listen": "test",
-              "script": {
-                "exec": [
-                  "pm.test('Status is 200 or 201', function () { pm.expect([200, 201]).to.include(pm.response.code); });"
-                ],
-                "type": "text/javascript"
-              }
-            }
-          ],
-          "request": {
-            "method": "POST",
-            "header": [
-              {
-                "key": "Content-Type",
-                "value": "application/json"
-              },
-              {
-                "key": "Authorization",
-                "value": "Bearer {{patientToken}}"
-              }
-            ],
-            "body": {
-              "mode": "raw",
-              "raw": "{\n  \"age\": 32,\n  \"gender\": \"Male\",\n  \"medicalHistory\": \"None\"\n}"
-            },
-            "url": "http://localhost:3000/patient/profile"
+            "type": "text/javascript"
           }
         }
-      ]
+      ],
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"email\": \"stream.doctor@example.com\",\n  \"password\": \"password123\",\n  \"name\": \"Dr. Sarah Jenkins\",\n  \"phone\": \"1234567890\",\n  \"role\": \"doctor\"\n}"
+        },
+        "url": {
+          "raw": "http://localhost:3000/auth/register",
+          "protocol": "http",
+          "host": [
+            "localhost"
+          ],
+          "port": "3000",
+          "path": [
+            "auth",
+            "register"
+          ]
+        }
+      },
+      "response": []
     },
     {
-      "name": "1. Doctor Availability Setup",
-      "item": [
+      "name": "0.2 Login Doctor",
+      "event": [
         {
-          "name": "1.1 Create Custom Override (STREAM)",
-          "event": [
-            {
-              "listen": "test",
-              "script": {
-                "exec": [
-                  "pm.test('Status is 201', function () { pm.response.to.have.status(201); });"
-                ],
-                "type": "text/javascript"
-              }
-            }
-          ],
-          "request": {
-            "method": "POST",
-            "header": [
-              {
-                "key": "Content-Type",
-                "value": "application/json"
-              },
-              {
-                "key": "Authorization",
-                "value": "Bearer {{doctorToken}}"
-              }
+          "listen": "test",
+          "script": {
+            "exec": [
+              "var res = pm.response.json();",
+              "if (res.access_token) { pm.environment.set('doctorToken', res.access_token); }"
             ],
-            "body": {
-              "mode": "raw",
-              "raw": "{\n  \"date\": \"2026-08-15\",\n  \"startTime\": \"10:00 AM\",\n  \"endTime\": \"12:00 PM\",\n  \"schedulingType\": \"STREAM\",\n  \"slotDuration\": 15,\n  \"bufferTime\": 5,\n  \"isAvailable\": true\n}"
-            },
-            "url": "http://localhost:3000/doctor/availability/override"
-          }
-        },
-        {
-          "name": "1.2 Create Custom Override (WAVE)",
-          "event": [
-            {
-              "listen": "test",
-              "script": {
-                "exec": [
-                  "pm.test('Status is 201', function () { pm.response.to.have.status(201); });"
-                ],
-                "type": "text/javascript"
-              }
-            }
-          ],
-          "request": {
-            "method": "POST",
-            "header": [
-              {
-                "key": "Content-Type",
-                "value": "application/json"
-              },
-              {
-                "key": "Authorization",
-                "value": "Bearer {{doctorToken}}"
-              }
-            ],
-            "body": {
-              "mode": "raw",
-              "raw": "{\n  \"date\": \"2026-08-16\",\n  \"startTime\": \"10:00 AM\",\n  \"endTime\": \"11:00 AM\",\n  \"schedulingType\": \"WAVE\",\n  \"maxCapacity\": 5,\n  \"isAvailable\": true\n}"
-            },
-            "url": "http://localhost:3000/doctor/availability/override"
-          }
-        },
-        {
-          "name": "1.3 Query STREAM Availability",
-          "event": [
-            {
-              "listen": "test",
-              "script": {
-                "exec": [
-                  "pm.test('Status is 200', function () { pm.response.to.have.status(200); });"
-                ],
-                "type": "text/javascript"
-              }
-            }
-          ],
-          "request": {
-            "method": "GET",
-            "header": [
-              {
-                "key": "Authorization",
-                "value": "Bearer {{patientToken}}"
-              }
-            ],
-            "url": "http://localhost:3000/doctor/availability/date?date=2026-08-15&doctorId={{doctorId}}"
-          }
-        },
-        {
-          "name": "1.4 Query WAVE Availability",
-          "event": [
-            {
-              "listen": "test",
-              "script": {
-                "exec": [
-                  "pm.test('Status is 200', function () { pm.response.to.have.status(200); });"
-                ],
-                "type": "text/javascript"
-              }
-            }
-          ],
-          "request": {
-            "method": "GET",
-            "header": [
-              {
-                "key": "Authorization",
-                "value": "Bearer {{patientToken}}"
-              }
-            ],
-            "url": "http://localhost:3000/doctor/availability/date?date=2026-08-16&doctorId={{doctorId}}"
+            "type": "text/javascript"
           }
         }
-      ]
+      ],
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"email\": \"stream.doctor@example.com\",\n  \"password\": \"password123\"\n}"
+        },
+        "url": {
+          "raw": "http://localhost:3000/auth/login",
+          "protocol": "http",
+          "host": [
+            "localhost"
+          ],
+          "port": "3000",
+          "path": [
+            "auth",
+            "login"
+          ]
+        }
+      },
+      "response": []
     },
     {
-      "name": "2. Appointment Booking & Queries",
-      "item": [
+      "name": "0.3 Create Doctor Profile",
+      "event": [
         {
-          "name": "2.1 Book STREAM Appointment",
-          "event": [
-            {
-              "listen": "test",
-              "script": {
-                "exec": [
-                  "pm.test('Status is 201', function () { pm.response.to.have.status(201); });",
-                  "var res = pm.response.json();",
-                  "if (res.id) { pm.environment.set('appointmentId', res.id); }"
-                ],
-                "type": "text/javascript"
-              }
-            }
-          ],
-          "request": {
-            "method": "POST",
-            "header": [
-              {
-                "key": "Content-Type",
-                "value": "application/json"
-              },
-              {
-                "key": "Authorization",
-                "value": "Bearer {{patientToken}}"
-              }
+          "listen": "test",
+          "script": {
+            "exec": [
+              "var res = pm.response.json();",
+              "if (res.id) { pm.environment.set('doctorId', res.id); }"
             ],
-            "body": {
-              "mode": "raw",
-              "raw": "{\n  \"doctorId\": \"{{doctorId}}\",\n  \"date\": \"2026-08-15\",\n  \"startTime\": \"10:00 AM\",\n  \"endTime\": \"10:15 AM\",\n  \"schedulingType\": \"STREAM\",\n  \"reason\": \"Routine Consultation\"\n}"
-            },
-            "url": "http://localhost:3000/appointments/book"
-          }
-        },
-        {
-          "name": "2.2 Book WAVE Appointment",
-          "event": [
-            {
-              "listen": "test",
-              "script": {
-                "exec": [
-                  "pm.test('Status is 201', function () { pm.response.to.have.status(201); });"
-                ],
-                "type": "text/javascript"
-              }
-            }
-          ],
-          "request": {
-            "method": "POST",
-            "header": [
-              {
-                "key": "Content-Type",
-                "value": "application/json"
-              },
-              {
-                "key": "Authorization",
-                "value": "Bearer {{patientToken}}"
-              }
-            ],
-            "body": {
-              "mode": "raw",
-              "raw": "{\n  \"doctorId\": \"{{doctorId}}\",\n  \"date\": \"2026-08-16\",\n  \"startTime\": \"10:00 AM\",\n  \"endTime\": \"11:00 AM\",\n  \"schedulingType\": \"WAVE\",\n  \"reason\": \"General Checkup\"\n}"
-            },
-            "url": "http://localhost:3000/appointments/book"
-          }
-        },
-        {
-          "name": "2.3 Get Patient Appointments",
-          "event": [
-            {
-              "listen": "test",
-              "script": {
-                "exec": [
-                  "pm.test('Status is 200', function () { pm.response.to.have.status(200); });"
-                ],
-                "type": "text/javascript"
-              }
-            }
-          ],
-          "request": {
-            "method": "GET",
-            "header": [
-              {
-                "key": "Authorization",
-                "value": "Bearer {{patientToken}}"
-              }
-            ],
-            "url": "http://localhost:3000/appointments/patient"
-          }
-        },
-        {
-          "name": "2.4 Get Doctor Appointments",
-          "event": [
-            {
-              "listen": "test",
-              "script": {
-                "exec": [
-                  "pm.test('Status is 200', function () { pm.response.to.have.status(200); });"
-                ],
-                "type": "text/javascript"
-              }
-            }
-          ],
-          "request": {
-            "method": "GET",
-            "header": [
-              {
-                "key": "Authorization",
-                "value": "Bearer {{doctorToken}}"
-              }
-            ],
-            "url": "http://localhost:3000/appointments/doctor"
+            "type": "text/javascript"
           }
         }
-      ]
+      ],
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          },
+          {
+            "key": "Authorization",
+            "value": "Bearer {{doctorToken}}"
+          }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"specialization\": \"Psychiatry\",\n  \"yearsOfExperience\": \"10 years\",\n  \"qualification\": \"MD, PhD\",\n  \"bio\": \"Specializing in mood disorders\",\n  \"schedulingType\": \"STREAM\"\n}"
+        },
+        "url": {
+          "raw": "http://localhost:3000/doctor/profile",
+          "protocol": "http",
+          "host": [
+            "localhost"
+          ],
+          "port": "3000",
+          "path": [
+            "doctor",
+            "profile"
+          ]
+        }
+      },
+      "response": []
     },
     {
-      "name": "3. Cancellation & Rescheduling",
-      "item": [
+      "name": "0.4 Register Patient",
+      "event": [
         {
-          "name": "3.1 Reschedule Appointment",
-          "event": [
-            {
-              "listen": "test",
-              "script": {
-                "exec": [
-                  "pm.test('Status is 200', function () { pm.response.to.have.status(200); });"
-                ],
-                "type": "text/javascript"
-              }
-            }
-          ],
-          "request": {
-            "method": "PATCH",
-            "header": [
-              {
-                "key": "Content-Type",
-                "value": "application/json"
-              },
-              {
-                "key": "Authorization",
-                "value": "Bearer {{patientToken}}"
-              }
+          "listen": "test",
+          "script": {
+            "exec": [
+              "var res = pm.response.json();",
+              "if (res.access_token) { pm.environment.set('patientToken', res.access_token); }"
             ],
-            "body": {
-              "mode": "raw",
-              "raw": "{\n  \"newDate\": \"2026-08-15\",\n  \"newStartTime\": \"10:20 AM\",\n  \"newEndTime\": \"10:35 AM\",\n  \"schedulingType\": \"STREAM\",\n  \"reason\": \"Rescheduled\"\n}"
-            },
-            "url": "http://localhost:3000/appointments/{{appointmentId}}/reschedule"
-          }
-        },
-        {
-          "name": "3.2 Patient Cancel Appointment",
-          "event": [
-            {
-              "listen": "test",
-              "script": {
-                "exec": [
-                  "pm.test('Status is 200', function () { pm.response.to.have.status(200); });"
-                ],
-                "type": "text/javascript"
-              }
-            }
-          ],
-          "request": {
-            "method": "PATCH",
-            "header": [
-              {
-                "key": "Authorization",
-                "value": "Bearer {{patientToken}}"
-              }
-            ],
-            "url": "http://localhost:3000/appointments/{{appointmentId}}/cancel"
-          }
-        },
-        {
-          "name": "3.3 Doctor Cancel Appointment",
-          "event": [
-            {
-              "listen": "test",
-              "script": {
-                "exec": [
-                  "pm.test('Status is 200', function () { pm.response.to.have.status(200); });"
-                ],
-                "type": "text/javascript"
-              }
-            }
-          ],
-          "request": {
-            "method": "PATCH",
-            "header": [
-              {
-                "key": "Authorization",
-                "value": "Bearer {{doctorToken}}"
-              }
-            ],
-            "url": "http://localhost:3000/appointments/{{appointmentId}}/cancel"
+            "type": "text/javascript"
           }
         }
-      ]
+      ],
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"email\": \"john.patient@example.com\",\n  \"password\": \"password123\",\n  \"name\": \"John Doe\",\n  \"phone\": \"9876543210\",\n  \"role\": \"patient\"\n}"
+        },
+        "url": {
+          "raw": "http://localhost:3000/auth/register",
+          "protocol": "http",
+          "host": [
+            "localhost"
+          ],
+          "port": "3000",
+          "path": [
+            "auth",
+            "register"
+          ]
+        }
+      },
+      "response": []
+    },
+    {
+      "name": "0.5 Login Patient",
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "exec": [
+              "var res = pm.response.json();",
+              "if (res.access_token) { pm.environment.set('patientToken', res.access_token); }"
+            ],
+            "type": "text/javascript"
+          }
+        }
+      ],
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"email\": \"john.patient@example.com\",\n  \"password\": \"password123\"\n}"
+        },
+        "url": {
+          "raw": "http://localhost:3000/auth/login",
+          "protocol": "http",
+          "host": [
+            "localhost"
+          ],
+          "port": "3000",
+          "path": [
+            "auth",
+            "login"
+          ]
+        }
+      },
+      "response": []
+    },
+    {
+      "name": "0.6 Create Patient Profile",
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          },
+          {
+            "key": "Authorization",
+            "value": "Bearer {{patientToken}}"
+          }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"age\": 32,\n  \"gender\": \"Male\",\n  \"medicalHistory\": \"None\"\n}"
+        },
+        "url": {
+          "raw": "http://localhost:3000/patient/profile",
+          "protocol": "http",
+          "host": [
+            "localhost"
+          ],
+          "port": "3000",
+          "path": [
+            "patient",
+            "profile"
+          ]
+        }
+      },
+      "response": []
+    },
+    {
+      "name": "1.1 Create Custom Override (STREAM)",
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          },
+          {
+            "key": "Authorization",
+            "value": "Bearer {{doctorToken}}"
+          }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"date\": \"2026-08-15\",\n  \"startTime\": \"10:00 AM\",\n  \"endTime\": \"12:00 PM\",\n  \"schedulingType\": \"STREAM\",\n  \"slotDuration\": 15,\n  \"bufferTime\": 5,\n  \"isAvailable\": true\n}"
+        },
+        "url": {
+          "raw": "http://localhost:3000/doctor/availability/override",
+          "protocol": "http",
+          "host": [
+            "localhost"
+          ],
+          "port": "3000",
+          "path": [
+            "doctor",
+            "availability",
+            "override"
+          ]
+        }
+      },
+      "response": []
+    },
+    {
+      "name": "1.2 Create Custom Override (WAVE)",
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          },
+          {
+            "key": "Authorization",
+            "value": "Bearer {{doctorToken}}"
+          }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"date\": \"2026-08-16\",\n  \"startTime\": \"10:00 AM\",\n  \"endTime\": \"11:00 AM\",\n  \"schedulingType\": \"WAVE\",\n  \"maxCapacity\": 5,\n  \"isAvailable\": true\n}"
+        },
+        "url": {
+          "raw": "http://localhost:3000/doctor/availability/override",
+          "protocol": "http",
+          "host": [
+            "localhost"
+          ],
+          "port": "3000",
+          "path": [
+            "doctor",
+            "availability",
+            "override"
+          ]
+        }
+      },
+      "response": []
+    },
+    {
+      "name": "1.3 Query STREAM Availability",
+      "request": {
+        "method": "GET",
+        "header": [
+          {
+            "key": "Authorization",
+            "value": "Bearer {{patientToken}}"
+          }
+        ],
+        "url": {
+          "raw": "http://localhost:3000/doctor/availability/date?date=2026-08-15&doctorId={{doctorId}}",
+          "protocol": "http",
+          "host": [
+            "localhost"
+          ],
+          "port": "3000",
+          "path": [
+            "doctor",
+            "availability",
+            "date"
+          ],
+          "query": [
+            {
+              "key": "date",
+              "value": "2026-08-15"
+            },
+            {
+              "key": "doctorId",
+              "value": "{{doctorId}}"
+            }
+          ]
+        }
+      },
+      "response": []
+    },
+    {
+      "name": "1.4 Query WAVE Availability",
+      "request": {
+        "method": "GET",
+        "header": [
+          {
+            "key": "Authorization",
+            "value": "Bearer {{patientToken}}"
+          }
+        ],
+        "url": {
+          "raw": "http://localhost:3000/doctor/availability/date?date=2026-08-16&doctorId={{doctorId}}",
+          "protocol": "http",
+          "host": [
+            "localhost"
+          ],
+          "port": "3000",
+          "path": [
+            "doctor",
+            "availability",
+            "date"
+          ],
+          "query": [
+            {
+              "key": "date",
+              "value": "2026-08-16"
+            },
+            {
+              "key": "doctorId",
+              "value": "{{doctorId}}"
+            }
+          ]
+        }
+      },
+      "response": []
+    },
+    {
+      "name": "2.1 Book STREAM Appointment",
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "exec": [
+              "var res = pm.response.json();",
+              "if (res.id) { pm.environment.set('appointmentId', res.id); }"
+            ],
+            "type": "text/javascript"
+          }
+        }
+      ],
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          },
+          {
+            "key": "Authorization",
+            "value": "Bearer {{patientToken}}"
+          }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"doctorId\": \"{{doctorId}}\",\n  \"date\": \"2026-08-15\",\n  \"startTime\": \"10:00 AM\",\n  \"endTime\": \"10:15 AM\",\n  \"schedulingType\": \"STREAM\",\n  \"reason\": \"Routine Consultation\"\n}"
+        },
+        "url": {
+          "raw": "http://localhost:3000/appointments/book",
+          "protocol": "http",
+          "host": [
+            "localhost"
+          ],
+          "port": "3000",
+          "path": [
+            "appointments",
+            "book"
+          ]
+        }
+      },
+      "response": []
+    },
+    {
+      "name": "2.2 Book WAVE Appointment",
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          },
+          {
+            "key": "Authorization",
+            "value": "Bearer {{patientToken}}"
+          }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"doctorId\": \"{{doctorId}}\",\n  \"date\": \"2026-08-16\",\n  \"startTime\": \"10:00 AM\",\n  \"endTime\": \"11:00 AM\",\n  \"schedulingType\": \"WAVE\",\n  \"reason\": \"General Checkup\"\n}"
+        },
+        "url": {
+          "raw": "http://localhost:3000/appointments/book",
+          "protocol": "http",
+          "host": [
+            "localhost"
+          ],
+          "port": "3000",
+          "path": [
+            "appointments",
+            "book"
+          ]
+        }
+      },
+      "response": []
+    },
+    {
+      "name": "2.3 Get Patient Appointments",
+      "request": {
+        "method": "GET",
+        "header": [
+          {
+            "key": "Authorization",
+            "value": "Bearer {{patientToken}}"
+          }
+        ],
+        "url": {
+          "raw": "http://localhost:3000/appointments/patient",
+          "protocol": "http",
+          "host": [
+            "localhost"
+          ],
+          "port": "3000",
+          "path": [
+            "appointments",
+            "patient"
+          ]
+        }
+      },
+      "response": []
+    },
+    {
+      "name": "2.4 Get Doctor Appointments",
+      "request": {
+        "method": "GET",
+        "header": [
+          {
+            "key": "Authorization",
+            "value": "Bearer {{doctorToken}}"
+          }
+        ],
+        "url": {
+          "raw": "http://localhost:3000/appointments/doctor",
+          "protocol": "http",
+          "host": [
+            "localhost"
+          ],
+          "port": "3000",
+          "path": [
+            "appointments",
+            "doctor"
+          ]
+        }
+      },
+      "response": []
+    },
+    {
+      "name": "3.1 Reschedule Appointment",
+      "request": {
+        "method": "PATCH",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          },
+          {
+            "key": "Authorization",
+            "value": "Bearer {{patientToken}}"
+          }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"newDate\": \"2026-08-15\",\n  \"newStartTime\": \"10:20 AM\",\n  \"newEndTime\": \"10:35 AM\",\n  \"schedulingType\": \"STREAM\",\n  \"reason\": \"Rescheduled\"\n}"
+        },
+        "url": {
+          "raw": "http://localhost:3000/appointments/{{appointmentId}}/reschedule",
+          "protocol": "http",
+          "host": [
+            "localhost"
+          ],
+          "port": "3000",
+          "path": [
+            "appointments",
+            "{{appointmentId}}",
+            "reschedule"
+          ]
+        }
+      },
+      "response": []
+    },
+    {
+      "name": "3.2 Patient Cancel Appointment",
+      "request": {
+        "method": "PATCH",
+        "header": [
+          {
+            "key": "Authorization",
+            "value": "Bearer {{patientToken}}"
+          }
+        ],
+        "url": {
+          "raw": "http://localhost:3000/appointments/{{appointmentId}}/cancel",
+          "protocol": "http",
+          "host": [
+            "localhost"
+          ],
+          "port": "3000",
+          "path": [
+            "appointments",
+            "{{appointmentId}}",
+            "cancel"
+          ]
+        }
+      },
+      "response": []
+    },
+    {
+      "name": "3.3 Doctor Cancel Appointment",
+      "request": {
+        "method": "PATCH",
+        "header": [
+          {
+            "key": "Authorization",
+            "value": "Bearer {{doctorToken}}"
+          }
+        ],
+        "url": {
+          "raw": "http://localhost:3000/appointments/{{appointmentId}}/cancel",
+          "protocol": "http",
+          "host": [
+            "localhost"
+          ],
+          "port": "3000",
+          "path": [
+            "appointments",
+            "{{appointmentId}}",
+            "cancel"
+          ]
+        }
+      },
+      "response": []
     }
   ]
 }
