@@ -138,7 +138,6 @@ Authorization: Bearer {{patientToken}}
   "date": "2026-08-15",
   "startTime": "10:00 AM",
   "endTime": "10:15 AM",
-  "schedulingType": "STREAM",
   "reason": "Routine Consultation"
 }
 
@@ -154,7 +153,6 @@ Authorization: Bearer {{patientToken}}
   "date": "2026-08-16",
   "startTime": "10:00 AM",
   "endTime": "11:00 AM",
-  "schedulingType": "WAVE",
   "reason": "General Checkup"
 }
 
@@ -181,7 +179,6 @@ Authorization: Bearer {{patientToken}}
   "newDate": "2026-08-15",
   "newStartTime": "10:20 AM",
   "newEndTime": "10:35 AM",
-  "schedulingType": "STREAM",
   "reason": "Rescheduled due to personal conflict"
 }
 

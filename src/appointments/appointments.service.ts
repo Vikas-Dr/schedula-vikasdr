@@ -111,7 +111,6 @@ export class AppointmentsService {
     }
 
     const effectiveSchedulingType =
-      dto.schedulingType ??
       matchingWindow.schedulingType ??
       doctorProfile.schedulingType ??
       'STREAM';
@@ -476,7 +475,6 @@ export class AppointmentsService {
     }
 
     const effectiveSchedulingType =
-      dto.schedulingType ??
       matchingWindow.schedulingType ??
       doctorProfile.schedulingType ??
       'STREAM';

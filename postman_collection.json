@@ -416,9 +416,9 @@
         ],
         "body": {
           "mode": "raw",
-          "raw": "{\n  \"doctorId\": \"{{doctorId}}\",\n  \"date\": \"2026-08-15\",\n  \"startTime\": \"10:00 AM\",\n  \"endTime\": \"10:15 AM\",\n  \"schedulingType\": \"STREAM\",\n  \"reason\": \"Routine Consultation\"\n}"
+          "raw": "{\n  \"doctorId\": \"{{doctorId}}\",\n  \"date\": \"2026-08-15\",\n  \"startTime\": \"10:00 AM\",\n  \"endTime\": \"10:15 AM\",\n  \"reason\": \"Routine Consultation\"\n}"
         },
-        "url": {
+        "url": {``
           "raw": "http://localhost:3000/appointments/book",
           "protocol": "http",
           "host": [
@@ -449,7 +449,7 @@
         ],
         "body": {
           "mode": "raw",
-          "raw": "{\n  \"doctorId\": \"{{doctorId}}\",\n  \"date\": \"2026-08-16\",\n  \"startTime\": \"10:00 AM\",\n  \"endTime\": \"11:00 AM\",\n  \"schedulingType\": \"WAVE\",\n  \"reason\": \"General Checkup\"\n}"
+          "raw": "{\n  \"doctorId\": \"{{doctorId}}\",\n  \"date\": \"2026-08-16\",\n  \"startTime\": \"10:00 AM\",\n  \"endTime\": \"11:00 AM\",\n  \"reason\": \"General Checkup\"\n}"
         },
         "url": {
           "raw": "http://localhost:3000/appointments/book",
