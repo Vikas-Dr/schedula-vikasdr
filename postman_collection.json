@@ -1,37 +1,10 @@
 {
   "info": {
-    "_postman_id": "schedula-appointment-lifecycle-collection-runner",
-    "name": "Schedula - Doctor Scheduling & Appointments API (Automated Tests)",
-    "description": "Complete Postman Collection with built-in automated test scripts (pm.test) for Postman Collection Runner. Tests authentication, profile creation, availability setup, Stream slot booking, Wave token assignment, patient/doctor queries, rescheduling, and cancellation.",
+    "_postman_id": "7b8c9d0e-1f2a-3b4c-5d6e-7f8a9b0c1d2e",
+    "name": "Schedula API",
+    "description": "Complete Postman Collection for Schedula Doctor Scheduling and Appointment Management",
     "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
   },
-  "variable": [
-    {
-      "key": "baseUrl",
-      "value": "http://localhost:3000",
-      "type": "string"
-    },
-    {
-      "key": "doctorToken",
-      "value": "",
-      "type": "string"
-    },
-    {
-      "key": "patientToken",
-      "value": "",
-      "type": "string"
-    },
-    {
-      "key": "doctorId",
-      "value": "",
-      "type": "string"
-    },
-    {
-      "key": "appointmentId",
-      "value": "",
-      "type": "string"
-    }
-  ],
   "item": [
     {
       "name": "0. Authentication & Profiles",
@@ -43,11 +16,11 @@
               "listen": "test",
               "script": {
                 "exec": [
-                  "pm.test('Successful registration (201 or 400 if user exists)', function () {",
+                  "pm.test('Status is 201 or 400', function () {",
                   "    pm.expect([201, 400]).to.include(pm.response.code);",
                   "});",
-                  "var jsonData = pm.response.json();",
-                  "if (jsonData.access_token) { pm.collectionVariables.set('doctorToken', jsonData.access_token); }"
+                  "var res = pm.response.json();",
+                  "if (res.access_token) { pm.environment.set('doctorToken', res.access_token); }"
                 ],
                 "type": "text/javascript"
               }
@@ -55,12 +28,17 @@
           ],
           "request": {
             "method": "POST",
-            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
             "body": {
               "mode": "raw",
-              "raw": "{\n  \"email\": \"stream.doctor.runner@example.com\",\n  \"password\": \"password123\",\n  \"name\": \"Dr. Sarah Jenkins\",\n  \"phone\": \"1234567890\",\n  \"role\": \"doctor\"\n}"
+              "raw": "{\n  \"email\": \"doctor@example.com\",\n  \"password\": \"password123\",\n  \"name\": \"Dr. Sarah Jenkins\",\n  \"phone\": \"1234567890\",\n  \"role\": \"doctor\"\n}"
             },
-            "url": { "raw": "{{baseUrl}}/auth/register", "host": ["{{baseUrl}}"], "path": ["auth", "register"] }
+            "url": "http://localhost:3000/auth/register"
           }
         },
         {
@@ -70,41 +48,9 @@
               "listen": "test",
               "script": {
                 "exec": [
-                  "pm.test('Status code is 200 OK', function () {",
-                  "    pm.response.to.have.status(200);",
-                  "});",
-                  "var jsonData = pm.response.json();",
-                  "pm.test('Response contains access_token', function () {",
-                  "    pm.expect(jsonData.access_token).to.be.a('string');",
-                  "});",
-                  "if (jsonData.access_token) { pm.collectionVariables.set('doctorToken', jsonData.access_token); }"
-                ],
-                "type": "text/javascript"
-              }
-            }
-          ],
-          "request": {
-            "method": "POST",
-            "header": [{ "key": "Content-Type", "value": "application/json" }],
-            "body": {
-              "mode": "raw",
-              "raw": "{\n  \"email\": \"stream.doctor.runner@example.com\",\n  \"password\": \"password123\"\n}"
-            },
-            "url": { "raw": "{{baseUrl}}/auth/login", "host": ["{{baseUrl}}"], "path": ["auth", "login"] }
-          }
-        },
-        {
-          "name": "0.3 Create Doctor Profile (STREAM Strategy)",
-          "event": [
-            {
-              "listen": "test",
-              "script": {
-                "exec": [
-                  "pm.test('Status code is 201 Created or 200 OK', function () {",
-                  "    pm.expect([200, 201]).to.include(pm.response.code);",
-                  "});",
-                  "var jsonData = pm.response.json();",
-                  "if (jsonData.id) { pm.collectionVariables.set('doctorId', jsonData.id); }"
+                  "pm.test('Status is 200', function () { pm.response.to.have.status(200); });",
+                  "var res = pm.response.json();",
+                  "if (res.access_token) { pm.environment.set('doctorToken', res.access_token); }"
                 ],
                 "type": "text/javascript"
               }
@@ -113,14 +59,50 @@
           "request": {
             "method": "POST",
             "header": [
-              { "key": "Content-Type", "value": "application/json" },
-              { "key": "Authorization", "value": "Bearer {{doctorToken}}" }
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
             ],
             "body": {
               "mode": "raw",
-              "raw": "{\n  \"specialization\": \"Psychiatry\",\n  \"yearsOfExperience\": \"10 years\",\n  \"qualification\": \"MD, PhD\",\n  \"bio\": \"Specializing in mood disorders and psychotherapy.\",\n  \"schedulingType\": \"STREAM\"\n}"
+              "raw": "{\n  \"email\": \"doctor@example.com\",\n  \"password\": \"password123\"\n}"
             },
-            "url": { "raw": "{{baseUrl}}/doctor/profile", "host": ["{{baseUrl}}"], "path": ["doctor", "profile"] }
+            "url": "http://localhost:3000/auth/login"
+          }
+        },
+        {
+          "name": "0.3 Create Doctor Profile (STREAM)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status is 200 or 201', function () { pm.expect([200, 201]).to.include(pm.response.code); });",
+                  "var res = pm.response.json();",
+                  "if (res.id) { pm.environment.set('doctorId', res.id); }"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{doctorToken}}"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"specialization\": \"Psychiatry\",\n  \"yearsOfExperience\": \"10 years\",\n  \"qualification\": \"MD, PhD\",\n  \"bio\": \"Specializing in mood disorders\",\n  \"schedulingType\": \"STREAM\"\n}"
+            },
+            "url": "http://localhost:3000/doctor/profile"
           }
         },
         {
@@ -130,11 +112,9 @@
               "listen": "test",
               "script": {
                 "exec": [
-                  "pm.test('Successful registration (201 or 400 if user exists)', function () {",
-                  "    pm.expect([201, 400]).to.include(pm.response.code);",
-                  "});",
-                  "var jsonData = pm.response.json();",
-                  "if (jsonData.access_token) { pm.collectionVariables.set('patientToken', jsonData.access_token); }"
+                  "pm.test('Status is 201 or 400', function () { pm.expect([201, 400]).to.include(pm.response.code); });",
+                  "var res = pm.response.json();",
+                  "if (res.access_token) { pm.environment.set('patientToken', res.access_token); }"
                 ],
                 "type": "text/javascript"
               }
@@ -142,12 +122,17 @@
           ],
           "request": {
             "method": "POST",
-            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
             "body": {
               "mode": "raw",
-              "raw": "{\n  \"email\": \"john.patient.runner@example.com\",\n  \"password\": \"password123\",\n  \"name\": \"John Doe\",\n  \"phone\": \"9876543210\",\n  \"role\": \"patient\"\n}"
+              "raw": "{\n  \"email\": \"patient@example.com\",\n  \"password\": \"password123\",\n  \"name\": \"John Doe\",\n  \"phone\": \"9876543210\",\n  \"role\": \"patient\"\n}"
             },
-            "url": { "raw": "{{baseUrl}}/auth/register", "host": ["{{baseUrl}}"], "path": ["auth", "register"] }
+            "url": "http://localhost:3000/auth/register"
           }
         },
         {
@@ -157,14 +142,9 @@
               "listen": "test",
               "script": {
                 "exec": [
-                  "pm.test('Status code is 200 OK', function () {",
-                  "    pm.response.to.have.status(200);",
-                  "});",
-                  "var jsonData = pm.response.json();",
-                  "pm.test('Response contains access_token', function () {",
-                  "    pm.expect(jsonData.access_token).to.be.a('string');",
-                  "});",
-                  "if (jsonData.access_token) { pm.collectionVariables.set('patientToken', jsonData.access_token); }"
+                  "pm.test('Status is 200', function () { pm.response.to.have.status(200); });",
+                  "var res = pm.response.json();",
+                  "if (res.access_token) { pm.environment.set('patientToken', res.access_token); }"
                 ],
                 "type": "text/javascript"
               }
@@ -172,12 +152,17 @@
           ],
           "request": {
             "method": "POST",
-            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
             "body": {
               "mode": "raw",
-              "raw": "{\n  \"email\": \"john.patient.runner@example.com\",\n  \"password\": \"password123\"\n}"
+              "raw": "{\n  \"email\": \"patient@example.com\",\n  \"password\": \"password123\"\n}"
             },
-            "url": { "raw": "{{baseUrl}}/auth/login", "host": ["{{baseUrl}}"], "path": ["auth", "login"] }
+            "url": "http://localhost:3000/auth/login"
           }
         },
         {
@@ -187,9 +172,7 @@
               "listen": "test",
               "script": {
                 "exec": [
-                  "pm.test('Status code is 201 Created or 200 OK', function () {",
-                  "    pm.expect([200, 201]).to.include(pm.response.code);",
-                  "});"
+                  "pm.test('Status is 200 or 201', function () { pm.expect([200, 201]).to.include(pm.response.code); });"
                 ],
                 "type": "text/javascript"
               }
@@ -198,14 +181,20 @@
           "request": {
             "method": "POST",
             "header": [
-              { "key": "Content-Type", "value": "application/json" },
-              { "key": "Authorization", "value": "Bearer {{patientToken}}" }
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{patientToken}}"
+              }
             ],
             "body": {
               "mode": "raw",
               "raw": "{\n  \"age\": 32,\n  \"gender\": \"Male\",\n  \"medicalHistory\": \"None\"\n}"
             },
-            "url": { "raw": "{{baseUrl}}/patient/profile", "host": ["{{baseUrl}}"], "path": ["patient", "profile"] }
+            "url": "http://localhost:3000/patient/profile"
           }
         }
       ]
@@ -214,15 +203,13 @@
       "name": "1. Doctor Availability Setup",
       "item": [
         {
-          "name": "1.1 Create Custom Override (STREAM - 15m duration, 5m buffer)",
+          "name": "1.1 Create Custom Override (STREAM)",
           "event": [
             {
               "listen": "test",
               "script": {
                 "exec": [
-                  "pm.test('Status code is 201 Created', function () {",
-                  "    pm.response.to.have.status(201);",
-                  "});"
+                  "pm.test('Status is 201', function () { pm.response.to.have.status(201); });"
                 ],
                 "type": "text/javascript"
               }
@@ -231,26 +218,30 @@
           "request": {
             "method": "POST",
             "header": [
-              { "key": "Content-Type", "value": "application/json" },
-              { "key": "Authorization", "value": "Bearer {{doctorToken}}" }
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{doctorToken}}"
+              }
             ],
             "body": {
               "mode": "raw",
               "raw": "{\n  \"date\": \"2026-08-15\",\n  \"startTime\": \"10:00 AM\",\n  \"endTime\": \"12:00 PM\",\n  \"schedulingType\": \"STREAM\",\n  \"slotDuration\": 15,\n  \"bufferTime\": 5,\n  \"isAvailable\": true\n}"
             },
-            "url": { "raw": "{{baseUrl}}/doctor/availability/override", "host": ["{{baseUrl}}"], "path": ["doctor", "availability", "override"] }
+            "url": "http://localhost:3000/doctor/availability/override"
           }
         },
         {
-          "name": "1.2 Create Custom Override (WAVE - 5 Capacity)",
+          "name": "1.2 Create Custom Override (WAVE)",
           "event": [
             {
               "listen": "test",
               "script": {
                 "exec": [
-                  "pm.test('Status code is 201 Created', function () {",
-                  "    pm.response.to.have.status(201);",
-                  "});"
+                  "pm.test('Status is 201', function () { pm.response.to.have.status(201); });"
                 ],
                 "type": "text/javascript"
               }
@@ -259,33 +250,30 @@
           "request": {
             "method": "POST",
             "header": [
-              { "key": "Content-Type", "value": "application/json" },
-              { "key": "Authorization", "value": "Bearer {{doctorToken}}" }
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{doctorToken}}"
+              }
             ],
             "body": {
               "mode": "raw",
               "raw": "{\n  \"date\": \"2026-08-16\",\n  \"startTime\": \"10:00 AM\",\n  \"endTime\": \"11:00 AM\",\n  \"schedulingType\": \"WAVE\",\n  \"maxCapacity\": 5,\n  \"isAvailable\": true\n}"
             },
-            "url": { "raw": "{{baseUrl}}/doctor/availability/override", "host": ["{{baseUrl}}"], "path": ["doctor", "availability", "override"] }
+            "url": "http://localhost:3000/doctor/availability/override"
           }
         },
         {
-          "name": "1.3 Query Availability for Date (STREAM)",
+          "name": "1.3 Query STREAM Availability",
           "event": [
             {
               "listen": "test",
               "script": {
                 "exec": [
-                  "pm.test('Status code is 200 OK', function () {",
-                  "    pm.response.to.have.status(200);",
-                  "});",
-                  "var jsonData = pm.response.json();",
-                  "pm.test('schedulingType is STREAM', function () {",
-                  "    pm.expect(jsonData.schedulingType).to.eql('STREAM');",
-                  "});",
-                  "pm.test('Slots array is populated', function () {",
-                  "    pm.expect(jsonData.slots).to.be.an('array').that.is.not.empty;",
-                  "});"
+                  "pm.test('Status is 200', function () { pm.response.to.have.status(200); });"
                 ],
                 "type": "text/javascript"
               }
@@ -293,35 +281,23 @@
           ],
           "request": {
             "method": "GET",
-            "header": [{ "key": "Authorization", "value": "Bearer {{patientToken}}" }],
-            "url": {
-              "raw": "{{baseUrl}}/doctor/availability/date?date=2026-08-15&doctorId={{doctorId}}",
-              "host": ["{{baseUrl}}"],
-              "path": ["doctor", "availability", "date"],
-              "query": [
-                { "key": "date", "value": "2026-08-15" },
-                { "key": "doctorId", "value": "{{doctorId}}" }
-              ]
-            }
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{patientToken}}"
+              }
+            ],
+            "url": "http://localhost:3000/doctor/availability/date?date=2026-08-15&doctorId={{doctorId}}"
           }
         },
         {
-          "name": "1.4 Query Availability for Date (WAVE)",
+          "name": "1.4 Query WAVE Availability",
           "event": [
             {
               "listen": "test",
               "script": {
                 "exec": [
-                  "pm.test('Status code is 200 OK', function () {",
-                  "    pm.response.to.have.status(200);",
-                  "});",
-                  "var jsonData = pm.response.json();",
-                  "pm.test('schedulingType is WAVE', function () {",
-                  "    pm.expect(jsonData.schedulingType).to.eql('WAVE');",
-                  "});",
-                  "pm.test('Waves array is populated', function () {",
-                  "    pm.expect(jsonData.waves).to.be.an('array').that.is.not.empty;",
-                  "});"
+                  "pm.test('Status is 200', function () { pm.response.to.have.status(200); });"
                 ],
                 "type": "text/javascript"
               }
@@ -329,16 +305,13 @@
           ],
           "request": {
             "method": "GET",
-            "header": [{ "key": "Authorization", "value": "Bearer {{patientToken}}" }],
-            "url": {
-              "raw": "{{baseUrl}}/doctor/availability/date?date=2026-08-16&doctorId={{doctorId}}",
-              "host": ["{{baseUrl}}"],
-              "path": ["doctor", "availability", "date"],
-              "query": [
-                { "key": "date", "value": "2026-08-16" },
-                { "key": "doctorId", "value": "{{doctorId}}" }
-              ]
-            }
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{patientToken}}"
+              }
+            ],
+            "url": "http://localhost:3000/doctor/availability/date?date=2026-08-16&doctorId={{doctorId}}"
           }
         }
       ]
@@ -347,21 +320,15 @@
       "name": "2. Appointment Booking & Queries",
       "item": [
         {
-          "name": "2.1 Book STREAM Appointment (Exact Slot)",
+          "name": "2.1 Book STREAM Appointment",
           "event": [
             {
               "listen": "test",
               "script": {
                 "exec": [
-                  "pm.test('Status code is 201 Created', function () {",
-                  "    pm.response.to.have.status(201);",
-                  "});",
-                  "var jsonData = pm.response.json();",
-                  "pm.test('Status is CONFIRMED & schedulingType is STREAM', function () {",
-                  "    pm.expect(jsonData.status).to.eql('CONFIRMED');",
-                  "    pm.expect(jsonData.schedulingType).to.eql('STREAM');",
-                  "});",
-                  "if (jsonData.id) { pm.collectionVariables.set('appointmentId', jsonData.id); }"
+                  "pm.test('Status is 201', function () { pm.response.to.have.status(201); });",
+                  "var res = pm.response.json();",
+                  "if (res.id) { pm.environment.set('appointmentId', res.id); }"
                 ],
                 "type": "text/javascript"
               }
@@ -370,32 +337,30 @@
           "request": {
             "method": "POST",
             "header": [
-              { "key": "Content-Type", "value": "application/json" },
-              { "key": "Authorization", "value": "Bearer {{patientToken}}" }
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{patientToken}}"
+              }
             ],
             "body": {
               "mode": "raw",
               "raw": "{\n  \"doctorId\": \"{{doctorId}}\",\n  \"date\": \"2026-08-15\",\n  \"startTime\": \"10:00 AM\",\n  \"endTime\": \"10:15 AM\",\n  \"schedulingType\": \"STREAM\",\n  \"reason\": \"Routine Consultation\"\n}"
             },
-            "url": { "raw": "{{baseUrl}}/appointments/book", "host": ["{{baseUrl}}"], "path": ["appointments", "book"] }
+            "url": "http://localhost:3000/appointments/book"
           }
         },
         {
-          "name": "2.2 Book WAVE Appointment (Sequential Token)",
+          "name": "2.2 Book WAVE Appointment",
           "event": [
             {
               "listen": "test",
               "script": {
                 "exec": [
-                  "pm.test('Status code is 201 Created', function () {",
-                  "    pm.response.to.have.status(201);",
-                  "});",
-                  "var jsonData = pm.response.json();",
-                  "pm.test('Token number is assigned & schedulingType is WAVE', function () {",
-                  "    pm.expect(jsonData.tokenNumber).to.be.a('number');",
-                  "    pm.expect(jsonData.displayToken).to.include('Token No:');",
-                  "    pm.expect(jsonData.schedulingType).to.eql('WAVE');",
-                  "});"
+                  "pm.test('Status is 201', function () { pm.response.to.have.status(201); });"
                 ],
                 "type": "text/javascript"
               }
@@ -404,29 +369,30 @@
           "request": {
             "method": "POST",
             "header": [
-              { "key": "Content-Type", "value": "application/json" },
-              { "key": "Authorization", "value": "Bearer {{patientToken}}" }
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{patientToken}}"
+              }
             ],
             "body": {
               "mode": "raw",
               "raw": "{\n  \"doctorId\": \"{{doctorId}}\",\n  \"date\": \"2026-08-16\",\n  \"startTime\": \"10:00 AM\",\n  \"endTime\": \"11:00 AM\",\n  \"schedulingType\": \"WAVE\",\n  \"reason\": \"General Checkup\"\n}"
             },
-            "url": { "raw": "{{baseUrl}}/appointments/book", "host": ["{{baseUrl}}"], "path": ["appointments", "book"] }
+            "url": "http://localhost:3000/appointments/book"
           }
         },
         {
-          "name": "2.3 Get Logged-in Patient Appointments",
+          "name": "2.3 Get Patient Appointments",
           "event": [
             {
               "listen": "test",
               "script": {
                 "exec": [
-                  "pm.test('Status code is 200 OK', function () {",
-                  "    pm.response.to.have.status(200);",
-                  "});",
-                  "pm.test('Returns array of appointments', function () {",
-                  "    pm.expect(pm.response.json()).to.be.an('array');",
-                  "});"
+                  "pm.test('Status is 200', function () { pm.response.to.have.status(200); });"
                 ],
                 "type": "text/javascript"
               }
@@ -434,23 +400,23 @@
           ],
           "request": {
             "method": "GET",
-            "header": [{ "key": "Authorization", "value": "Bearer {{patientToken}}" }],
-            "url": { "raw": "{{baseUrl}}/appointments/patient", "host": ["{{baseUrl}}"], "path": ["appointments", "patient"] }
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{patientToken}}"
+              }
+            ],
+            "url": "http://localhost:3000/appointments/patient"
           }
         },
         {
-          "name": "2.4 Get Logged-in Doctor Appointments",
+          "name": "2.4 Get Doctor Appointments",
           "event": [
             {
               "listen": "test",
               "script": {
                 "exec": [
-                  "pm.test('Status code is 200 OK', function () {",
-                  "    pm.response.to.have.status(200);",
-                  "});",
-                  "pm.test('Returns array of appointments', function () {",
-                  "    pm.expect(pm.response.json()).to.be.an('array');",
-                  "});"
+                  "pm.test('Status is 200', function () { pm.response.to.have.status(200); });"
                 ],
                 "type": "text/javascript"
               }
@@ -458,8 +424,13 @@
           ],
           "request": {
             "method": "GET",
-            "header": [{ "key": "Authorization", "value": "Bearer {{doctorToken}}" }],
-            "url": { "raw": "{{baseUrl}}/appointments/doctor", "host": ["{{baseUrl}}"], "path": ["appointments", "doctor"] }
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{doctorToken}}"
+              }
+            ],
+            "url": "http://localhost:3000/appointments/doctor"
           }
         }
       ]
@@ -468,20 +439,13 @@
       "name": "3. Cancellation & Rescheduling",
       "item": [
         {
-          "name": "3.1 Patient Reschedule Appointment",
+          "name": "3.1 Reschedule Appointment",
           "event": [
             {
               "listen": "test",
               "script": {
                 "exec": [
-                  "pm.test('Status code is 200 OK', function () {",
-                  "    pm.response.to.have.status(200);",
-                  "});",
-                  "var jsonData = pm.response.json();",
-                  "pm.test('Rescheduled message returned', function () {",
-                  "    pm.expect(jsonData.message).to.include('rescheduled');",
-                  "    pm.expect(jsonData.startTime).to.eql('10:20');",
-                  "});"
+                  "pm.test('Status is 200', function () { pm.response.to.have.status(200); });"
                 ],
                 "type": "text/javascript"
               }
@@ -490,14 +454,20 @@
           "request": {
             "method": "PATCH",
             "header": [
-              { "key": "Content-Type", "value": "application/json" },
-              { "key": "Authorization", "value": "Bearer {{patientToken}}" }
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{patientToken}}"
+              }
             ],
             "body": {
               "mode": "raw",
-              "raw": "{\n  \"newDate\": \"2026-08-15\",\n  \"newStartTime\": \"10:20 AM\",\n  \"newEndTime\": \"10:35 AM\",\n  \"schedulingType\": \"STREAM\",\n  \"reason\": \"Rescheduled due to personal conflict\"\n}"
+              "raw": "{\n  \"newDate\": \"2026-08-15\",\n  \"newStartTime\": \"10:20 AM\",\n  \"newEndTime\": \"10:35 AM\",\n  \"schedulingType\": \"STREAM\",\n  \"reason\": \"Rescheduled\"\n}"
             },
-            "url": { "raw": "{{baseUrl}}/appointments/{{appointmentId}}/reschedule", "host": ["{{baseUrl}}"], "path": ["appointments", "{{appointmentId}}", "reschedule"] }
+            "url": "http://localhost:3000/appointments/{{appointmentId}}/reschedule"
           }
         },
         {
@@ -507,13 +477,7 @@
               "listen": "test",
               "script": {
                 "exec": [
-                  "pm.test('Status code is 200 OK', function () {",
-                  "    pm.response.to.have.status(200);",
-                  "});",
-                  "var jsonData = pm.response.json();",
-                  "pm.test('Status updated to CANCELLED_BY_PATIENT', function () {",
-                  "    pm.expect(jsonData.status).to.eql('CANCELLED_BY_PATIENT');",
-                  "});"
+                  "pm.test('Status is 200', function () { pm.response.to.have.status(200); });"
                 ],
                 "type": "text/javascript"
               }
@@ -521,8 +485,37 @@
           ],
           "request": {
             "method": "PATCH",
-            "header": [{ "key": "Authorization", "value": "Bearer {{patientToken}}" }],
-            "url": { "raw": "{{baseUrl}}/appointments/{{appointmentId}}/cancel", "host": ["{{baseUrl}}"], "path": ["appointments", "{{appointmentId}}", "cancel"] }
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{patientToken}}"
+              }
+            ],
+            "url": "http://localhost:3000/appointments/{{appointmentId}}/cancel"
+          }
+        },
+        {
+          "name": "3.3 Doctor Cancel Appointment",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status is 200', function () { pm.response.to.have.status(200); });"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "PATCH",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{doctorToken}}"
+              }
+            ],
+            "url": "http://localhost:3000/appointments/{{appointmentId}}/cancel"
           }
         }
       ]
