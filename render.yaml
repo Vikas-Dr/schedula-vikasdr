@@ -4,14 +4,12 @@ services:
     runtime: node
     plan: free
     buildCommand: npm install --include=dev && npm run build
-    startCommand: npm run start:prod
+    startCommand: npm run migration:run:prod && npm run start:prod
     healthCheckPath: /
     envVars:
       - key: NODE_ENV
         value: production
       - key: DATABASE_URL
-        sync: false   # Set this manually in Render dashboard (paste Neon connection string)
+        sync: false
       - key: JWT_SECRET
-        generateValue: true   # Render auto-generates a secure random secret
-      - key: PORT
-        value: 3000
+        generateValue: true
