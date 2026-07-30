@@ -21,7 +21,9 @@ describe('AppController (e2e)', () => {
     expect(res.body.message).toBe(
       'Service running successfully and all the end points are working successfully',
     );
-    expect(res.body.status).toBe('online');
+    expect(res.body.status).toBe('success');
+    expect(res.body.endpoints.doctor_apis).toBeDefined();
+    expect(res.body.endpoints.patient_apis).toBeDefined();
   });
 
   afterEach(async () => {

@@ -15,12 +15,14 @@ describe('AppController', () => {
   });
 
   describe('root', () => {
-    it('should return service health message', () => {
+    it('should return service health JSON with endpoint categories', () => {
       const res = appController.getHello();
       expect(res.message).toBe(
         'Service running successfully and all the end points are working successfully',
       );
-      expect(res.status).toBe('online');
+      expect(res.status).toBe('success');
+      expect(res.endpoints.doctor_apis).toBeDefined();
+      expect(res.endpoints.patient_apis).toBeDefined();
     });
   });
 });
