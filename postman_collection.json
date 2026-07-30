@@ -1,14 +1,14 @@
 {
   "info": {
     "_postman_id": "8f9a2b3c-4d5e-6f7a-8b9c-0d1e2f3a4b5c",
-    "name": "Schedula - Appointment Booking & Management API",
-    "description": "Complete Postman Collection for Schedula Appointment Booking & Management (Stream exact slots, Wave token assignment, Patient/Doctor queries, Cancel & Reschedule).",
+    "name": "Schedula - Complete API Collection",
+    "description": "Complete Postman Collection for Schedula API (Auth, Doctor & Patient Profiles, Availability, Stream/Wave Appointments, Cancel & Reschedule). Works out of the box with Render & Local URLs.",
     "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
   },
   "variable": [
     {
       "key": "baseUrl",
-      "value": "http://localhost:3000",
+      "value": "https://schedula-vikasdr.onrender.com",
       "type": "string"
     },
     {
