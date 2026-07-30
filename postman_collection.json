@@ -1,10 +1,37 @@
 {
   "info": {
     "_postman_id": "8f9a2b3c-4d5e-6f7a-8b9c-0d1e2f3a4b5c",
-    "name": "Schedula API",
-    "description": "Complete Postman Collection for Schedula Advanced Doctor Scheduling System",
+    "name": "Schedula - Complete API Collection",
+    "description": "Complete Postman Collection for Schedula API (Auth, Doctor & Patient Profiles, Availability, Stream/Wave Appointments, Cancel & Reschedule). Works out of the box with Render & Local URLs.",
     "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
   },
+  "variable": [
+    {
+      "key": "baseUrl",
+      "value": "https://schedula-vikasdr.onrender.com",
+      "type": "string"
+    },
+    {
+      "key": "doctorToken",
+      "value": "",
+      "type": "string"
+    },
+    {
+      "key": "patientToken",
+      "value": "",
+      "type": "string"
+    },
+    {
+      "key": "doctorId",
+      "value": "",
+      "type": "string"
+    },
+    {
+      "key": "appointmentId",
+      "value": "",
+      "type": "string"
+    }
+  ],
   "item": [
     {
       "name": "0.1 Register Doctor",
@@ -14,7 +41,10 @@
           "script": {
             "exec": [
               "var res = pm.response.json();",
-              "if (res.access_token) { pm.environment.set('doctorToken', res.access_token); }"
+              "if (res.access_token) {",
+              "    pm.environment.set('doctorToken', res.access_token);",
+              "    pm.collectionVariables.set('doctorToken', res.access_token);",
+              "}"
             ],
             "type": "text/javascript"
           }
@@ -33,12 +63,10 @@
           "raw": "{\n  \"email\": \"stream.doctor@example.com\",\n  \"password\": \"password123\",\n  \"name\": \"Dr. Sarah Jenkins\",\n  \"phone\": \"1234567890\",\n  \"role\": \"doctor\"\n}"
         },
         "url": {
-          "raw": "http://localhost:3000/auth/register",
-          "protocol": "http",
+          "raw": "{{baseUrl}}/auth/register",
           "host": [
-            "localhost"
+            "{{baseUrl}}"
           ],
-          "port": "3000",
           "path": [
             "auth",
             "register"
@@ -55,7 +83,10 @@
           "script": {
             "exec": [
               "var res = pm.response.json();",
-              "if (res.access_token) { pm.environment.set('doctorToken', res.access_token); }"
+              "if (res.access_token) {",
+              "    pm.environment.set('doctorToken', res.access_token);",
+              "    pm.collectionVariables.set('doctorToken', res.access_token);",
+              "}"
             ],
             "type": "text/javascript"
           }
@@ -74,12 +105,10 @@
           "raw": "{\n  \"email\": \"stream.doctor@example.com\",\n  \"password\": \"password123\"\n}"
         },
         "url": {
-          "raw": "http://localhost:3000/auth/login",
-          "protocol": "http",
+          "raw": "{{baseUrl}}/auth/login",
           "host": [
-            "localhost"
+            "{{baseUrl}}"
           ],
-          "port": "3000",
           "path": [
             "auth",
             "login"
@@ -96,7 +125,10 @@
           "script": {
             "exec": [
               "var res = pm.response.json();",
-              "if (res.id) { pm.environment.set('doctorId', res.id); }"
+              "if (res.id) {",
+              "    pm.environment.set('doctorId', res.id);",
+              "    pm.collectionVariables.set('doctorId', res.id);",
+              "}"
             ],
             "type": "text/javascript"
           }
@@ -119,12 +151,10 @@
           "raw": "{\n  \"specialization\": \"Psychiatry\",\n  \"yearsOfExperience\": \"10 years\",\n  \"qualification\": \"MD, PhD\",\n  \"bio\": \"Specializing in mood disorders\",\n  \"schedulingType\": \"STREAM\"\n}"
         },
         "url": {
-          "raw": "http://localhost:3000/doctor/profile",
-          "protocol": "http",
+          "raw": "{{baseUrl}}/doctor/profile",
           "host": [
-            "localhost"
+            "{{baseUrl}}"
           ],
-          "port": "3000",
           "path": [
             "doctor",
             "profile"
@@ -141,7 +171,10 @@
           "script": {
             "exec": [
               "var res = pm.response.json();",
-              "if (res.access_token) { pm.environment.set('patientToken', res.access_token); }"
+              "if (res.access_token) {",
+              "    pm.environment.set('patientToken', res.access_token);",
+              "    pm.collectionVariables.set('patientToken', res.access_token);",
+              "}"
             ],
             "type": "text/javascript"
           }
@@ -160,12 +193,10 @@
           "raw": "{\n  \"email\": \"john.patient@example.com\",\n  \"password\": \"password123\",\n  \"name\": \"John Doe\",\n  \"phone\": \"9876543210\",\n  \"role\": \"patient\"\n}"
         },
         "url": {
-          "raw": "http://localhost:3000/auth/register",
-          "protocol": "http",
+          "raw": "{{baseUrl}}/auth/register",
           "host": [
-            "localhost"
+            "{{baseUrl}}"
           ],
-          "port": "3000",
           "path": [
             "auth",
             "register"
@@ -182,7 +213,10 @@
           "script": {
             "exec": [
               "var res = pm.response.json();",
-              "if (res.access_token) { pm.environment.set('patientToken', res.access_token); }"
+              "if (res.access_token) {",
+              "    pm.environment.set('patientToken', res.access_token);",
+              "    pm.collectionVariables.set('patientToken', res.access_token);",
+              "}"
             ],
             "type": "text/javascript"
           }
@@ -201,12 +235,10 @@
           "raw": "{\n  \"email\": \"john.patient@example.com\",\n  \"password\": \"password123\"\n}"
         },
         "url": {
-          "raw": "http://localhost:3000/auth/login",
-          "protocol": "http",
+          "raw": "{{baseUrl}}/auth/login",
           "host": [
-            "localhost"
+            "{{baseUrl}}"
           ],
-          "port": "3000",
           "path": [
             "auth",
             "login"
@@ -234,12 +266,10 @@
           "raw": "{\n  \"age\": 32,\n  \"gender\": \"Male\",\n  \"medicalHistory\": \"None\"\n}"
         },
         "url": {
-          "raw": "http://localhost:3000/patient/profile",
-          "protocol": "http",
+          "raw": "{{baseUrl}}/patient/profile",
           "host": [
-            "localhost"
+            "{{baseUrl}}"
           ],
-          "port": "3000",
           "path": [
             "patient",
             "profile"
@@ -249,7 +279,7 @@
       "response": []
     },
     {
-      "name": "1.1 Create Custom Override (STREAM)",
+      "name": "1.1 Create Doctor Stream Availability Window",
       "request": {
         "method": "POST",
         "header": [
@@ -267,12 +297,10 @@
           "raw": "{\n  \"date\": \"2026-08-15\",\n  \"startTime\": \"10:00 AM\",\n  \"endTime\": \"12:00 PM\",\n  \"schedulingType\": \"STREAM\",\n  \"slotDuration\": 15,\n  \"bufferTime\": 5,\n  \"isAvailable\": true\n}"
         },
         "url": {
-          "raw": "http://localhost:3000/doctor/availability/override",
-          "protocol": "http",
+          "raw": "{{baseUrl}}/doctor/availability/override",
           "host": [
-            "localhost"
+            "{{baseUrl}}"
           ],
-          "port": "3000",
           "path": [
             "doctor",
             "availability",
@@ -283,7 +311,7 @@
       "response": []
     },
     {
-      "name": "1.2 Create Custom Override (WAVE)",
+      "name": "1.2 Create Doctor Wave Availability Window",
       "request": {
         "method": "POST",
         "header": [
@@ -301,12 +329,10 @@
           "raw": "{\n  \"date\": \"2026-08-16\",\n  \"startTime\": \"10:00 AM\",\n  \"endTime\": \"11:00 AM\",\n  \"schedulingType\": \"WAVE\",\n  \"maxCapacity\": 5,\n  \"isAvailable\": true\n}"
         },
         "url": {
-          "raw": "http://localhost:3000/doctor/availability/override",
-          "protocol": "http",
+          "raw": "{{baseUrl}}/doctor/availability/override",
           "host": [
-            "localhost"
+            "{{baseUrl}}"
           ],
-          "port": "3000",
           "path": [
             "doctor",
             "availability",
@@ -317,7 +343,7 @@
       "response": []
     },
     {
-      "name": "1.3 Query STREAM Availability",
+      "name": "1.3 Query Stream Availability for Date",
       "request": {
         "method": "GET",
         "header": [
@@ -327,12 +353,10 @@
           }
         ],
         "url": {
-          "raw": "http://localhost:3000/doctor/availability/date?date=2026-08-15&doctorId={{doctorId}}",
-          "protocol": "http",
+          "raw": "{{baseUrl}}/doctor/availability/date?date=2026-08-15&doctorId={{doctorId}}",
           "host": [
-            "localhost"
+            "{{baseUrl}}"
           ],
-          "port": "3000",
           "path": [
             "doctor",
             "availability",
@@ -353,7 +377,7 @@
       "response": []
     },
     {
-      "name": "1.4 Query WAVE Availability",
+      "name": "1.4 Query Wave Availability for Date",
       "request": {
         "method": "GET",
         "header": [
@@ -363,12 +387,10 @@
           }
         ],
         "url": {
-          "raw": "http://localhost:3000/doctor/availability/date?date=2026-08-16&doctorId={{doctorId}}",
-          "protocol": "http",
+          "raw": "{{baseUrl}}/doctor/availability/date?date=2026-08-16&doctorId={{doctorId}}",
           "host": [
-            "localhost"
+            "{{baseUrl}}"
           ],
-          "port": "3000",
           "path": [
             "doctor",
             "availability",
@@ -396,7 +418,10 @@
           "script": {
             "exec": [
               "var res = pm.response.json();",
-              "if (res.id) { pm.environment.set('appointmentId', res.id); }"
+              "if (res.id) {",
+              "    pm.environment.set('appointmentId', res.id);",
+              "    pm.collectionVariables.set('appointmentId', res.id);",
+              "}"
             ],
             "type": "text/javascript"
           }
@@ -418,13 +443,11 @@
           "mode": "raw",
           "raw": "{\n  \"doctorId\": \"{{doctorId}}\",\n  \"date\": \"2026-08-15\",\n  \"startTime\": \"10:00 AM\",\n  \"endTime\": \"10:15 AM\",\n  \"reason\": \"Routine Consultation\"\n}"
         },
-        "url": {``
-          "raw": "http://localhost:3000/appointments/book",
-          "protocol": "http",
+        "url": {
+          "raw": "{{baseUrl}}/appointments/book",
           "host": [
-            "localhost"
+            "{{baseUrl}}"
           ],
-          "port": "3000",
           "path": [
             "appointments",
             "book"
@@ -452,12 +475,10 @@
           "raw": "{\n  \"doctorId\": \"{{doctorId}}\",\n  \"date\": \"2026-08-16\",\n  \"startTime\": \"10:00 AM\",\n  \"endTime\": \"11:00 AM\",\n  \"reason\": \"General Checkup\"\n}"
         },
         "url": {
-          "raw": "http://localhost:3000/appointments/book",
-          "protocol": "http",
+          "raw": "{{baseUrl}}/appointments/book",
           "host": [
-            "localhost"
+            "{{baseUrl}}"
           ],
-          "port": "3000",
           "path": [
             "appointments",
             "book"
@@ -477,12 +498,10 @@
           }
         ],
         "url": {
-          "raw": "http://localhost:3000/appointments/patient",
-          "protocol": "http",
+          "raw": "{{baseUrl}}/appointments/patient",
           "host": [
-            "localhost"
+            "{{baseUrl}}"
           ],
-          "port": "3000",
           "path": [
             "appointments",
             "patient"
@@ -502,12 +521,10 @@
           }
         ],
         "url": {
-          "raw": "http://localhost:3000/appointments/doctor",
-          "protocol": "http",
+          "raw": "{{baseUrl}}/appointments/doctor",
           "host": [
-            "localhost"
+            "{{baseUrl}}"
           ],
-          "port": "3000",
           "path": [
             "appointments",
             "doctor"
@@ -532,15 +549,13 @@
         ],
         "body": {
           "mode": "raw",
-          "raw": "{\n  \"newDate\": \"2026-08-15\",\n  \"newStartTime\": \"10:20 AM\",\n  \"newEndTime\": \"10:35 AM\",\n  \"schedulingType\": \"STREAM\",\n  \"reason\": \"Rescheduled\"\n}"
+          "raw": "{\n  \"newDate\": \"2026-08-15\",\n  \"newStartTime\": \"10:20 AM\",\n  \"newEndTime\": \"10:35 AM\",\n  \"reason\": \"Rescheduled due to personal schedule change\"\n}"
         },
         "url": {
-          "raw": "http://localhost:3000/appointments/{{appointmentId}}/reschedule",
-          "protocol": "http",
+          "raw": "{{baseUrl}}/appointments/{{appointmentId}}/reschedule",
           "host": [
-            "localhost"
+            "{{baseUrl}}"
           ],
-          "port": "3000",
           "path": [
             "appointments",
             "{{appointmentId}}",
@@ -561,12 +576,10 @@
           }
         ],
         "url": {
-          "raw": "http://localhost:3000/appointments/{{appointmentId}}/cancel",
-          "protocol": "http",
+          "raw": "{{baseUrl}}/appointments/{{appointmentId}}/cancel",
           "host": [
-            "localhost"
+            "{{baseUrl}}"
           ],
-          "port": "3000",
           "path": [
             "appointments",
             "{{appointmentId}}",
@@ -587,12 +600,10 @@
           }
         ],
         "url": {
-          "raw": "http://localhost:3000/appointments/{{appointmentId}}/cancel",
-          "protocol": "http",
+          "raw": "{{baseUrl}}/appointments/{{appointmentId}}/cancel",
           "host": [
-            "localhost"
+            "{{baseUrl}}"
           ],
-          "port": "3000",
           "path": [
             "appointments",
             "{{appointmentId}}",

@@ -17,16 +17,26 @@ import { Appointment } from './appointments/appointment.entity';
     TypeOrmModule.forRootAsync({
       useFactory: (): TypeOrmModuleOptions => {
         const isTest = process.env.NODE_ENV === 'test';
-        const dbType = (process.env.DB_TYPE as 'postgres' | 'sqlite') ?? 'sqlite';
 
-        if (dbType === 'postgres' && !isTest) {
+        // Test: use in-memory SQLite
+        if (isTest) {
+          return {
+            type: 'sqlite',
+            database: ':memory:',
+            entities: [User, DoctorProfile, PatientProfile, Appointment],
+            synchronize: true,
+            dropSchema: true,
+            autoLoadEntities: true,
+            logging: false,
+          };
+        }
+
+        // Production / staging: prefer DATABASE_URL (Neon / Render)
+        if (process.env.DATABASE_URL) {
           return {
             type: 'postgres',
-            database: process.env.DB_NAME ?? 'schedula',
-            host: process.env.DB_HOST ?? 'localhost',
-            port: parseInt(process.env.DB_PORT ?? '5432', 10),
-            username: process.env.DB_USER ?? 'postgres',
-            password: process.env.DB_PASS ?? 'postgres',
+            url: process.env.DATABASE_URL,
+            ssl: { rejectUnauthorized: false },
             entities: [User, DoctorProfile, PatientProfile, Appointment],
             migrations: [__dirname + '/migrations/*{.ts,.js}'],
             synchronize: false,
@@ -35,13 +45,29 @@ import { Appointment } from './appointments/appointment.entity';
           };
         }
 
+        // Explicit postgres env vars
+        if (process.env.DB_TYPE === 'postgres') {
+          return {
+            type: 'postgres',
+            host: process.env.DB_HOST ?? 'localhost',
+            port: parseInt(process.env.DB_PORT ?? '5432', 10),
+            username: process.env.DB_USER ?? 'postgres',
+            password: process.env.DB_PASS ?? 'postgres',
+            database: process.env.DB_NAME ?? 'schedula',
+            entities: [User, DoctorProfile, PatientProfile, Appointment],
+            migrations: [__dirname + '/migrations/*{.ts,.js}'],
+            synchronize: false,
+            autoLoadEntities: true,
+            logging: false,
+          };
+        }
+
+        // Local development fallback: SQLite
         return {
           type: 'sqlite',
-          database: isTest ? ':memory:' : (process.env.DB_NAME ?? 'schedula.sqlite'),
+          database: process.env.DB_NAME ?? 'schedula.sqlite',
           entities: [User, DoctorProfile, PatientProfile, Appointment],
-          migrations: [__dirname + '/migrations/*{.ts,.js}'],
           synchronize: true,
-          dropSchema: isTest,
           autoLoadEntities: true,
           logging: false,
         };
