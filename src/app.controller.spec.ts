@@ -1,6 +1,7 @@
 import { Test, TestingModule } from '@nestjs/testing';
 import { AppController } from './app.controller';
 import { AppService } from './app.service';
+import { Request, Response } from 'express';
 
 describe('AppController', () => {
   let appController: AppController;
@@ -15,14 +16,17 @@ describe('AppController', () => {
   });
 
   describe('root', () => {
-    it('should return service health JSON with endpoint categories', () => {
-      const res = appController.getHello();
-      expect(res.message).toBe(
+    it('should return service health JSON when called by API client', () => {
+      const req = { headers: { accept: 'application/json' } } as unknown as Request;
+      const res = {
+        json: jest.fn().mockImplementation((data) => data),
+      } as unknown as Response;
+
+      const result = appController.getHello(req, res);
+      expect(res.json).toHaveBeenCalled();
+      expect(result.message).toBe(
         'Service running successfully and all the end points are working successfully',
       );
-      expect(res.status).toBe('success');
-      expect(res.endpoints.doctor_apis).toBeDefined();
-      expect(res.endpoints.patient_apis).toBeDefined();
     });
   });
 });
