@@ -18,7 +18,7 @@ const entities = [
 
 const migrations = [__dirname + '/../migrations/*{.ts,.js}'];
 
-// Support DATABASE_URL (Neon / Render) or individual env vars
+// Support DATABASE_URL (Neon / Render), individual postgres env vars, or SQLite fallback
 export const AppDataSource = process.env.DATABASE_URL
   ? new DataSource({
       type: 'postgres',

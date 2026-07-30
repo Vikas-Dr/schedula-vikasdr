@@ -313,6 +313,90 @@ describe('Advanced Doctor Scheduling System - Wave & Stream (e2e)', () => {
     });
   });
 
+  describe('Cancellation and Rescheduling Flow', () => {
+    let appointmentId: string;
+
+    it('Patient 1 books a Stream appointment to test cancel & reschedule', async () => {
+      const res = await request(app.getHttpServer())
+        .post('/appointments/book')
+        .set('Authorization', `Bearer ${patient1Token}`)
+        .send({
+          doctorId: streamDoctorId,
+          date: testDate,
+          startTime: '10:20',
+          endTime: '10:35',
+          schedulingType: 'STREAM',
+        })
+        .expect(201);
+
+      appointmentId = res.body.id;
+      expect(appointmentId).toBeDefined();
+    });
+
+    it('Patient 1 reschedules appointment to slot 10:40-10:55', async () => {
+      const res = await request(app.getHttpServer())
+        .patch(`/appointments/${appointmentId}/reschedule`)
+        .set('Authorization', `Bearer ${patient1Token}`)
+        .send({
+          newDate: testDate,
+          newStartTime: '10:40',
+          newEndTime: '10:55',
+          schedulingType: 'STREAM',
+        })
+        .expect(200);
+
+      expect(res.body.startTime).toBe('10:40');
+      expect(res.body.endTime).toBe('10:55');
+    });
+
+    it('Patient 1 cancels rescheduled appointment', async () => {
+      const res = await request(app.getHttpServer())
+        .patch(`/appointments/${appointmentId}/cancel`)
+        .set('Authorization', `Bearer ${patient1Token}`)
+        .expect(200);
+
+      expect(res.body.status).toBe('CANCELLED_BY_PATIENT');
+    });
+
+    it('Doctor cancels a Wave appointment', async () => {
+      // Patient 1 books a wave slot on future date
+      const futureWaveDate = '2030-08-01';
+      await request(app.getHttpServer())
+        .post('/doctor/availability/override')
+        .set('Authorization', `Bearer ${waveDoctorToken}`)
+        .send({
+          date: futureWaveDate,
+          startTime: '14:00',
+          endTime: '15:00',
+          schedulingType: 'WAVE',
+          maxCapacity: 1,
+        })
+        .expect(201);
+
+      const bookRes = await request(app.getHttpServer())
+        .post('/appointments/book')
+        .set('Authorization', `Bearer ${patient1Token}`)
+        .send({
+          doctorId: waveDoctorId,
+          date: futureWaveDate,
+          startTime: '14:00',
+          endTime: '15:00',
+          schedulingType: 'WAVE',
+        })
+        .expect(201);
+
+      const waveAppId = bookRes.body.id;
+
+      // Doctor cancels
+      const cancelRes = await request(app.getHttpServer())
+        .patch(`/appointments/${waveAppId}/cancel`)
+        .set('Authorization', `Bearer ${waveDoctorToken}`)
+        .expect(200);
+
+      expect(cancelRes.body.status).toBe('CANCELLED_BY_DOCTOR');
+    });
+  });
+
   describe('Validation & Edge Cases', () => {
     it('Invalid slotDuration (0) returns 400 Bad Request', async () => {
       await request(app.getHttpServer())

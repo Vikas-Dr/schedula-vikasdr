@@ -1,6 +1,6 @@
 # Advanced Doctor Scheduling System - Flow Charts
 
-This document presents the simple flowcharts for the **Stream Scheduling Strategy** and the **Wave Scheduling Strategy** in the Schedula Advanced Doctor Scheduling System.
+This document presents the flowcharts for **Stream Scheduling**, **Wave Scheduling**, **Appointment Cancellation (Patient & Doctor)**, and **Patient Rescheduling** in the Schedula Advanced Doctor Scheduling System.
 
 ---
 
@@ -39,6 +39,42 @@ flowchart TD
 
 ---
 
+## 3. Cancellation Flow (Patient & Doctor)
+
+```mermaid
+flowchart TD
+    A[Cancellation Triggered: PATCH /appointments/:id/cancel] --> B{Check User Role}
+    B -- Patient --> C{Does Appointment belong to Patient?}
+    C -- Yes --> D[Set Status: CANCELLED_BY_PATIENT]
+    C -- No --> E[Return Error 400: Unauthorized Cancel]
+    B -- Doctor --> F{Does Appointment belong to Doctor?}
+    F -- Yes --> G[Set Status: CANCELLED_BY_DOCTOR]
+    F -- No --> H[Return Error 400: Unauthorized Cancel]
+    D --> I[Stream Slot / Wave Capacity Freed for Date]
+    G --> I
+```
+
+---
+
+## 4. Patient Rescheduling Flow
+
+```mermaid
+flowchart TD
+    A[Patient requests Reschedule: PATCH /appointments/:id/reschedule] --> B[Validate Patient Ownership & Active Status]
+    B --> C[Fetch Doctor Availability for New Date]
+    C --> D{Check Strategy}
+    D -- STREAM --> E{Is New Slot Available?}
+    E -- Yes --> F[Move Booking to New Slot & Confirm]
+    E -- No --> G[Return Error 409: New Slot Unavailable]
+    D -- WAVE --> H{Does New Wave Have Capacity?}
+    H -- Yes --> I[Assign New Sequential Token & Confirm]
+    H -- No --> J[Return Error 409: New Wave Full]
+    F --> K[Old Stream Slot / Wave Capacity Freed]
+    I --> K
+```
+
+---
+
 ## Flow Summary Table
 
 | Feature | Stream Scheduling | Wave Scheduling |
@@ -48,3 +84,5 @@ flowchart TD
 | **Parameters** | `slotDuration`, `bufferTime` | `maxCapacity` / `timeWindow` |
 | **Patient Confirmation** | Exact time (e.g. 10:00 AM - 10:15 AM) | Time window + Token Number (e.g. Token No: 3) |
 | **Capacity Handling** | 1 patient per exact slot | Sequential token assignment up to `maxCapacity` |
+| **Cancellation** | Frees exact slot for rebooking | Increases available wave capacity |
+| **Rescheduling** | Moves to new available Stream slot | Moves to new Wave window with new token |

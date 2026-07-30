@@ -31,12 +31,12 @@ import { Appointment } from './appointments/appointment.entity';
           };
         }
 
-        // Production / staging: prefer DATABASE_URL (Neon / Render) then individual env vars
+        // Production / staging: prefer DATABASE_URL (Neon / Render)
         if (process.env.DATABASE_URL) {
           return {
             type: 'postgres',
             url: process.env.DATABASE_URL,
-            ssl: { rejectUnauthorized: false }, // Required for Neon & most hosted PG
+            ssl: { rejectUnauthorized: false },
             entities: [User, DoctorProfile, PatientProfile, Appointment],
             migrations: [__dirname + '/migrations/*{.ts,.js}'],
             synchronize: false,
@@ -45,7 +45,7 @@ import { Appointment } from './appointments/appointment.entity';
           };
         }
 
-        // Explicit postgres env vars (DB_HOST etc.)
+        // Explicit postgres env vars
         if (process.env.DB_TYPE === 'postgres') {
           return {
             type: 'postgres',
