@@ -15,8 +15,12 @@ describe('AppController', () => {
   });
 
   describe('root', () => {
-    it('should return "Hello World!"', () => {
-      expect(appController.getHello()).toBe('Hello World!');
+    it('should return service health message', () => {
+      const res = appController.getHello();
+      expect(res.message).toBe(
+        'Service running successfully and all the end points are working successfully',
+      );
+      expect(res.status).toBe('online');
     });
   });
 });
