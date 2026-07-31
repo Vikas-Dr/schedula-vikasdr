@@ -2,6 +2,12 @@
 
 This guide covers deploying the Schedula NestJS backend to **Render** (free tier) with a **Neon PostgreSQL** hosted database.
 
+## Production Live URL
+
+- **Public Live API URL**: `https://schedula-vikasdr.onrender.com`
+- **Database**: Hosted Neon PostgreSQL
+- **Hosting Platform**: Render
+
 ---
 
 ## Tech Stack
