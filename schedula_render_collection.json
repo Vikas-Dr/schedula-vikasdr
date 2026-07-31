@@ -86,6 +86,10 @@
               "if (res.access_token) {",
               "    pm.environment.set('doctorToken', res.access_token);",
               "    pm.collectionVariables.set('doctorToken', res.access_token);",
+              "}",
+              "if (res.email) {",
+              "    pm.environment.set('doctorEmail', res.email);",
+              "    pm.collectionVariables.set('doctorEmail', res.email);",
               "}"
             ],
             "type": "text/javascript"
@@ -226,6 +230,10 @@
               "if (res.access_token) {",
               "    pm.environment.set('patientToken', res.access_token);",
               "    pm.collectionVariables.set('patientToken', res.access_token);",
+              "}",
+              "if (res.email) {",
+              "    pm.environment.set('patientEmail', res.email);",
+              "    pm.collectionVariables.set('patientEmail', res.email);",
               "}"
             ],
             "type": "text/javascript"
